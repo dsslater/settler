@@ -4,6 +4,10 @@ app.controller('gameController', function($scope, socket) {
   $scope.dragStart = null;
 
   $scope.reload = function() {
+    window.addEventListener("beforeunload", function (event) {
+      event.returnValue = undefined;
+      return undefined;
+    });
     window.location.reload();
   }
 

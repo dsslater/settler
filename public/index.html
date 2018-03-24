@@ -25,8 +25,15 @@
     <script src="game.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
 
+    <script type="text/JavaScript"> 
+        window.addEventListener("beforeunload", function (event) {
+          event.returnValue = "Are you sure that you want to leave?";
+          return event.returnValue;
+        });
+    </script>
+
 </head>
-<body ng-click="closeDialog()" ng-controller="mainController">
+<body ng-click="closeDialog()" ng-controller="mainController" onbeforeunload="Exit();">
     <div class="container">
         <div class="jumbotron text-center unselectable">
             <h1>Settler</h1><p>by David Slater</p>
