@@ -1,0 +1,10 @@
+<table ng-if="!game.gameStart" class="frontBoxes">
+    <tr>
+        <td>
+            <div class="frontBox cellWrapper">
+                <h2>{{game.readyPlayers.length}}/{{game.players.length}} Players Ready</h2>
+				<button ng-if="!player.ready" ng-click="playerReady()">Ready</button>
+            </div>
+        </td>
+    </tr>
+</table>

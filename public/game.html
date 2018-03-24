@@ -1,0 +1,42 @@
+<div ng-if="!gameOver(game.board)" class="square unselectable" ng-mouseleave="clearMoveArmies()">
+  <table class="board">
+    <tr ng-repeat="i in game.board track by $index") ng-init='row = $index'>
+      <td ng-repeat="j in game.board[row] track by $index" 
+          ng-init="cell = game.board[row][$index]" 
+          >
+        <div
+          class="{{cell.color}} cellWrapper" 
+          ng-class="cell.city==true ? 'city' : ''" 
+          ng-mousedown="mouseDown(row, $index)"
+          ng-mouseup="moveArmies(row, $index)"
+          ng-if="!fogOfWar(row, $index)"
+          >
+          <span class="cell unselectable">{{cell.amount}}
+          </span>
+        </div>
+        <div
+          ng-if="fogOfWar(row, $index)"
+          class="black cellWrapper"
+          >
+          <span class="cell unselectable"></span>
+        </div>
+
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<table ng-if="gameOver(game.board)" class="frontBoxes">
+    <tr>
+        <td>
+            <div class="frontBox cellWrapper">
+                <h2 ">
+                    <span ng-if="win(game.board)">YOU WIN!!</span>
+                    <span ng-if="!win(game.board)"> Better luck next time...</span>
+                </h2>
+                <button ng-click="reload()">Play again</button>
+            </div>
+        </td>
+    </tr>
+</table>
