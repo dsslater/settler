@@ -45,20 +45,6 @@ var Point = new Schema({
   }
 });
 
-var Field = new Schema({
-  dimensions: {
-    width: {
-      type: Number,
-      required: true,
-    },
-    height: {
-      type: Number,
-      required: true,
-    },
-  },
-  points: [Point]
-});
-
 var GameSchema = new Schema({
   gameName: {
     type: String,
@@ -83,10 +69,15 @@ var GameSchema = new Schema({
     type: [String],
     required: false,
   },
-  field: {
-    type: Field,
+  width: {
+    type: Number,
     required: true,
-  }
+  },
+  height: {
+    type: Number,
+    required: true,
+  },
+  points: [Point]
 });
 
 var Games = mongoose.model('Games', GameSchema);

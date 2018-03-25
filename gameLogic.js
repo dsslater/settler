@@ -25,7 +25,7 @@ module.exports = function(ioInit) {
 
 function getColor(game, player) {
   /* Return the color for the provided player in the provided game. */
-  if (player == '') return 'white';
+  if (player == 'NPC') return 'white';
 
   var colorIndex = game.players.findIndex(function(elem) {
     return elem == player;
@@ -50,7 +50,7 @@ function getCities() {
 function initializeBoard(game) {
   /* Initialize board with zeros and cities. */
   var cities = getCities();
-  game.field.points = [];
+  game.points = [];
   for (var row = 0; row < BOARD_DIMENSIONS[0]; row++) {
     for (var col = 0; col < BOARD_DIMENSIONS[1]; col++) {
       var city = Boolean(cities.find(function(elem) {
@@ -69,11 +69,11 @@ function initializeBoard(game) {
         row: row,
         col: col,
         amount: amount,
-        owner: '',
+        owner: 'NPC',
         city: city,
-        color: getColor('', ''),
+        color: getColor('', 'NPC'),
       };
-      game.field.points.push(point);
+      game.points.push(point);
     }
   }
 }
@@ -98,12 +98,8 @@ function createGame(gameName, gamePass, socket) {
       started: false,
       room: socket.id,
       players: [socket.id],
-      field: {
-        dimensions: {
-          height: BOARD_DIMENSIONS[0], 
-          width: BOARD_DIMENSIONS[1]
-        },
-      },
+      height: BOARD_DIMENSIONS[0], 
+      width: BOARD_DIMENSIONS[1]
     };
 
     initializeBoard(game);
@@ -125,7 +121,7 @@ function createGame(gameName, gamePass, socket) {
         room: room, 
         id: socket.id,
         dimensions: BOARD_DIMENSIONS,
-        points: gameInst.field.points,
+        points: gameInst.points,
         numPlayers: 0
       };
       socket.emit('gameReady', gameInformation);
@@ -171,7 +167,7 @@ function joinGame(gameName, gamePass, socket) {
         room: game.room,
         id: socket.id,
         dimensions: BOARD_DIMENSIONS,
-        points: game.field.points,
+        points: game.points,
       };
       socket.emit('gameReady', gameInformation);
 
@@ -212,7 +208,7 @@ function getPath(game, player, startRow, startCol, endRow, endCol) {
 
   for (var row = startRow; rowComp(row, endRow); row = rowOp(row,  1)) {
     for (var col = startCol; colComp(col, endCol); col = colOp(col, 1)) {
-      var point = game.field.points.find(function(elem) {
+      var point = game.points.find(function(elem) {
         return elem.row == row && elem.col == col;
       });
 
@@ -274,7 +270,7 @@ function messageRoom(room, event, payload={}) {
 function updatePoints(player, game, points, amount, citySetup=false, callback=null) {
   /* Update an array of points with the provided information. */
   for (var i = 0; i < points.length; i++) {
-    var point = game.field.points.find(function(elem) {
+    var point = game.points.find(function(elem) {
       return elem.row == points[i].row && elem.col == points[i].col;
     });
 
@@ -338,7 +334,7 @@ function setupPlayer(player, room) {
       var row = Math.floor(Math.random() * BOARD_DIMENSIONS[0])
       var col = Math.floor(Math.random() * BOARD_DIMENSIONS[1])
 
-      var point = game.field.points.find(function(elem) {
+      var point = game.points.find(function(elem) {
         return elem.row == row && elem.col == col;
       });
 
@@ -432,22 +428,26 @@ function removePlayer(player) {
 
 function armyGrowth(cityGrowth=false) {
   /* Grow the armies for all active games. */
-  Games.find({}, function(err, games) {
+  var query = {started: true};
+  var update = null;
+  var options = null
+  if (cityGrowth) {
+    update = {$inc: {"points.$[point].amount": 1}};
+    options = {arrayFilters: [{$and: [{"point.owner": {"$ne": "NPC"}}, 
+                                      {"point.city": true}]}]};
+  } else {
+    update = {$inc: {"points.$[point].amount": 1}}
+    options = {arrayFilters: [{"point.owner": {"$ne": "NPC"}}]};
+  }
+
+  Games.updateMany(query, update, options, function(err, affected) {
     if (err) return console.error(err);
-    games.forEach(function(game) {
-      if (!game.started) return;
-      game.field.points.forEach(function(point) {
-        if (!point.owner) return;
-        if (cityGrowth) {
-          if (point.city)
-            point.amount += 1;
-        } else {
-          point.amount += 1;
-        }
-      });
-      game.save(function(err, prod, numAffected) {
-        messageRoom(game.room, 'update', game.field.points);
+    Games.find({started: true}, function(err, games) {
+      if (err) return console.error(err);
+      games.forEach(function(game) {
+        messageRoom(game.room, 'update', game.points);
       });
     });
   });
 }
+
