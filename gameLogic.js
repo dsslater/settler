@@ -27,7 +27,7 @@ function getColor(game, player) {
   /* Return the color for the provided player in the provided game. */
   if (player == 'NPC') return 'white';
 
-  var colorIndex = game.players.findIndex(function(elem) {
+  var colorIndex = game.readyPlayers.findIndex(function(elem) {
     return elem == player;
   });
 
@@ -340,45 +340,34 @@ function setupPlayer(player, room) {
 
       if (!point.city) {
         console.log('Setting starting point at: ', row, col, " for ", player);
-        var callback = function(){
-          // Add players to ready list after starting points are created.
-          addReadyPlayer(player, room);
-        };
         var points = [{row: row, col: col}]
-        return updatePoints(player, game, points, 1, true, callback);
+        return addReadyPlayer(player, game, points);
       }
     }
   });
 }
 
-function addReadyPlayer(player, room) {
+function addReadyPlayer(player, game, points) {
   /* Add the provided player to the game's list of ready players and alert the 
      room that the player is ready. */
-  Games.find({'room': room}, function(err, games){
-    if (err) {
-      return console.error(err);
-    } else if (games.length < 1) {
-      return console.log('No game found to get ready for.');
-    }
-    var game = games[0];
-    game.readyPlayers.push(player);
+  game.readyPlayers.push(player);
 
-    // If all players are ready, start the game.
-    if (game.readyPlayers.length == game.players.length) {
-      if (game.players.length > 1) {
-        game.started = true;
-      }
+  // If all players are ready, start the game.
+  if (game.readyPlayers.length == game.players.length) {
+    if (game.players.length > 1) {
+      game.started = true;
     }
+  }
 
-    game.save(function(err, prod, numAffected) {
-      var playerInformation = {
-        players: game.players,
-        readyPlayers: game.readyPlayers,
-      };
-      messageRoom(room, 'playerUpdate', playerInformation);
-      if (game.started) 
-        messageRoom(room, 'gameStart');
-    });
+  updatePoints(player, game, points, 1, true, function() {
+    var playerInformation = {
+      players: game.players,
+      readyPlayers: game.readyPlayers,
+    };
+
+    messageRoom(game.room, 'playerUpdate', playerInformation);
+    if (game.started) 
+      messageRoom(game.room, 'gameStart');
   });
 }
 
@@ -399,13 +388,15 @@ function removePlayer(player) {
 
     game.players.splice(playerIndex, 1);
 
-    /* If they indicated they were ready, they must also be removed the from 
-       the readyPlayer array. */
-    var readyPlayerIndex = game.readyPlayers.findIndex(function(elem) {
-      return elem == player;
-    });
-    if (readyPlayerIndex >= 0) {
-      game.readyPlayers.splice(readyPlayerIndex, 1);
+    if (!game.started) {
+      /* If they indicated they were ready, they must also be removed the from 
+         the readyPlayer array. */
+      var readyPlayerIndex = game.readyPlayers.findIndex(function(elem) {
+        return elem == player;
+      });
+      if (readyPlayerIndex >= 0) {
+        game.readyPlayers.splice(readyPlayerIndex, 1);
+      }
     }
 
     if (game.players.length == 0) {

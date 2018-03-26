@@ -131,7 +131,7 @@ input {
 }
 
 .blue {
-  background-color: blue;
+  background-color: #4169E1;
 }
 
 .orange {
@@ -139,11 +139,11 @@ input {
 }
 
 .purple {
-  background-color: purple;
+  background-color: #DDA0DD;
 }
 
 .yellow {
-  background-color: yellow;
+  background-color: #FFD700;
 }
 
 .grey {
