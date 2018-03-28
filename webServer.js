@@ -48,11 +48,6 @@ io.on('connection', function (socket) {
   });
 });
 
-setInterval(game.armyGrowth, game.GROWTH_TIME);
-
-setInterval(function() {
-  game.armyGrowth(true);
-}, game.GROWTH_TIME/5);
 
 app.use(express.static('public'));
 server.listen(PORT_NUMBER, function() {

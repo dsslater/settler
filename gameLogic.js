@@ -23,6 +23,37 @@ module.exports = function(ioInit) {
   }
 }
 
+var armyGrowthLoop = null;
+
+var cityGrowthLoop = null;
+
+
+function setupGrowth() {
+  if (!armyGrowthLoop) {
+    console.log("Creating growth threads.");
+    armyGrowthLoop = setInterval(armyGrowth, GROWTH_TIME);
+    cityGrowthLoop = setInterval(function() {
+      armyGrowth(true);
+    }, GROWTH_TIME/5);
+  }
+}
+
+function tearDownGrowth() {
+  Games.find({started: true}, function(err, games) {
+    if (err)
+      return console.error(err);
+
+    if (games.length == 0) {
+      // race condition
+      console.log("Removing growth threads.");
+      clearInterval(armyGrowthLoop);
+      clearInterval(cityGrowthLoop);
+      armyGrowthLoop = null;
+      cityGrowthLoop = null;
+    }
+  });
+}
+
 function getColor(game, player) {
   /* Return the color for the provided player in the provided game. */
   if (player == 'NPC') return 'white';
@@ -132,6 +163,7 @@ function createGame(gameName, gamePass, socket) {
       };
       messageRoom(game.room, 'playerUpdate', playerInformation);
       console.log('Game ' + gameName + ' created.');
+      setupGrowth();
     });
   });  
 }
@@ -406,6 +438,7 @@ function removePlayer(player) {
           console.log(err);
         } else {
           console.log("Removed game " + game.gameName + '.');
+          tearDownGrowth();
         }
       });
     } else {
