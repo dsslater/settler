@@ -40,6 +40,8 @@ app.controller('gameController', function($scope, socket) {
   };
 
   $scope.fogOfWar = function(row, col, verbose=false) {
+    if ($scope.game.over) 
+      return false;
     var cell = $scope.game.board[row][col];
     if (cell.owner == $scope.player.id) return false;
 
@@ -55,11 +57,11 @@ app.controller('gameController', function($scope, socket) {
 
   $scope.gameOver = function(board) {
     if (!$scope.game.gameStart) return false;
-    var firstPlayer = '';
+    var firstPlayer = null;
     for (var row = 0; row < $scope.game.dimensions[0]; row++) {
       for (var col = 0; col < $scope.game.dimensions[1]; col++) {
         var cell = board[row][col];
-        if (cell.city && cell.owner) {
+        if (cell.city && cell.owner != "NPC") {
           if (firstPlayer) {
             if (cell.owner != firstPlayer) return false;
           } else {
@@ -68,6 +70,8 @@ app.controller('gameController', function($scope, socket) {
         }
       }
     }
+    $scope.game.over = true;
+    socket.disconnect();
     return true;
   }
 
