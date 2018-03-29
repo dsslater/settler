@@ -9,6 +9,9 @@ app.factory('socket', [function() {
     },
     emit: function(eventName, data) {
       socket.emit(eventName, data);
+    },
+    disconnect: function() {
+      socket.disconnect();
     }
   };
 }]);
@@ -30,6 +33,15 @@ app.controller('mainController', function($scope, socket) {
 
   $scope.player.newGameName = '';
   $scope.player.newGamePass = '';
+  $scope.game.blockReload = true;
+
+  window.addEventListener("beforeunload", function (event) {
+    if ($scope.game.blockReload)
+      event.returnValue = "Are you sure that you want to leave?";
+    else 
+      event.returnValue = undefined;
+    return event.returnValue;
+  });
 
   $scope.openJoinDialog = function(event) {
     $scope.dialog.create = false;
@@ -80,7 +92,6 @@ app.controller('mainController', function($scope, socket) {
           var bottom = Math.min($scope.game.dimensions[0] - 1, row + 1);
           var left = Math.max(0, col - 1);
           var right = Math.min($scope.game.dimensions[1] - 1, col + 1);
-          if (row == 0 && col == 0) console.log(top, bottom, left, right);
           cell.neighbors = new Set([
             $scope.game.board[top][col],
             $scope.game.board[row][left],

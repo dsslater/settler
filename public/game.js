@@ -4,10 +4,6 @@ app.controller('gameController', function($scope, socket) {
   $scope.dragStart = null;
 
   $scope.reload = function() {
-    window.addEventListener("beforeunload", function (event) {
-      event.returnValue = undefined;
-      return undefined;
-    });
     window.location.reload();
   }
 
@@ -16,7 +12,6 @@ app.controller('gameController', function($scope, socket) {
   };
 
   $scope.moveArmies = function(row, col) {
-    console.log('Move Armies');
     if (!$scope.dragStart) return;
     if (row != $scope.dragStart[0] || col != $scope.dragStart[1]) {
       if (row == $scope.dragStart[0] || col == $scope.dragStart[1]) {
@@ -27,7 +22,6 @@ app.controller('gameController', function($scope, socket) {
           end_col: col, 
           room: $scope.player.room
         };
-        console.log(payload);
         socket.emit('moveArmies', payload);
         $scope.clearMoveArmies();
       }
@@ -35,7 +29,6 @@ app.controller('gameController', function($scope, socket) {
   };
 
   $scope.mouseDown = function(row, col) {
-    console.log('Mouse Down');
     $scope.dragStart = [row, col];
   };
 
@@ -72,6 +65,9 @@ app.controller('gameController', function($scope, socket) {
     }
     $scope.game.over = true;
     socket.disconnect();
+    document.body.scrollTop = 245; 
+    document.documentElement.scrollTop = 245;
+    $scope.game.blockReload = false;
     return true;
   }
 
@@ -80,7 +76,7 @@ app.controller('gameController', function($scope, socket) {
     for (var row = 0; row < $scope.game.dimensions[0]; row++) {
       for (var col = 0; col < $scope.game.dimensions[1]; col++) {
         var cell = board[row][col];
-        if (cell.owner) {
+        if (cell.city && cell.owner != "NPC") {
           return cell.owner == $scope.player.id;
         }
       }
