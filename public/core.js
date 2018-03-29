@@ -35,16 +35,10 @@ app.controller('mainController', function($scope, socket) {
   $scope.player.newGamePass = '';
   $scope.game.blockReload = true;
 
-  window.addEventListener("beforeunload", function (event) {
-    if ($scope.game.blockReload) {
-      console.log("A");
-      event.returnValue = "Are you sure that you want to leave?";
-    } else {
-      console.log("B");
-      event.returnValue = null;
-    }
+  window.onbeforeunload = function (event) {
+    event.returnValue = "Are you sure that you want to leave the game?";
     return event.returnValue;
-  });
+  }
 
   $scope.openJoinDialog = function(event) {
     $scope.dialog.create = false;

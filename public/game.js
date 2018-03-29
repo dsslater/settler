@@ -76,7 +76,6 @@ app.controller('gameController', function($scope, socket) {
       socket.disconnect();
       document.body.scrollTop = 245; 
       document.documentElement.scrollTop = 245;
-      $scope.game.blockReload = false;
       window.onbeforeunload = null;
       return true;
     }
