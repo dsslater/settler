@@ -36,10 +36,13 @@ app.controller('mainController', function($scope, socket) {
   $scope.game.blockReload = true;
 
   window.addEventListener("beforeunload", function (event) {
-    if ($scope.game.blockReload)
+    if ($scope.game.blockReload) {
+      console.log("A");
       event.returnValue = "Are you sure that you want to leave?";
-    else 
-      event.returnValue = undefined;
+    } else {
+      console.log("B");
+      event.returnValue = null;
+    }
     return event.returnValue;
   });
 

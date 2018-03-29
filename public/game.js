@@ -50,29 +50,39 @@ app.controller('gameController', function($scope, socket) {
 
   $scope.gameOver = function(board) {
     if (!$scope.game.gameStart) return false;
+    if ($scope.game.over) return true;
+
     var firstPlayer = null;
+    var cityFoundForThisPlayer = false;
+    var multipleActivePlayers = false;
     for (var row = 0; row < $scope.game.dimensions[0]; row++) {
       for (var col = 0; col < $scope.game.dimensions[1]; col++) {
         var cell = board[row][col];
         if (cell.city && cell.owner != "NPC") {
-          if (firstPlayer) {
-            if (cell.owner != firstPlayer) return false;
+          if (cell.owner == $scope.player.id)
+            cityFoundForThisPlayer = true
+
+          if (!firstPlayer) {
+            firstPlayer = cell.owner
           } else {
-            firstPlayer = cell.owner;
+            if (cell.owner != firstPlayer)
+              multipleActivePlayers = true;
           }
         }
       }
     }
-    $scope.game.over = true;
-    socket.disconnect();
-    document.body.scrollTop = 245; 
-    document.documentElement.scrollTop = 245;
-    $scope.game.blockReload = false;
-    return true;
+    if (!cityFoundForThisPlayer || !multipleActivePlayers) {
+      $scope.game.over = true;
+      socket.disconnect();
+      document.body.scrollTop = 245; 
+      document.documentElement.scrollTop = 245;
+      $scope.game.blockReload = false;
+      window.onbeforeunload = null;
+      return true;
+    }
   }
 
   $scope.win = function(board) {
-    var firstPlayer = '';
     for (var row = 0; row < $scope.game.dimensions[0]; row++) {
       for (var col = 0; col < $scope.game.dimensions[1]; col++) {
         var cell = board[row][col];
