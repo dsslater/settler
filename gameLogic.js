@@ -17,7 +17,7 @@ module.exports = function(ioInit) {
     joinGame: joinGame,
     addArmies: addArmies,
     moveArmies: moveArmies,
-    setupPlayer: setupPlayer,
+    setupPlayer: addReadyPlayer,
     armyGrowth: armyGrowth,
     GROWTH_TIME: GROWTH_TIME,
   }
@@ -299,14 +299,19 @@ function messageRoom(room, event, payload={}) {
   io.to(room).emit(event, payload);
 }
 
-function updatePoints(player, game, points, amount, citySetup=false, callback=null) {
+function updatePoints(players, game, points, amounts, citySetup=false, callback=null) {
   /* Update an array of points with the provided information. */
+
+  var changedPoints = [];
+
   for (var i = 0; i < points.length; i++) {
+    var player = players[i];
+    var amount = amounts[i];
     var point = game.points.find(function(elem) {
       return elem.row == points[i].row && elem.col == points[i].col;
     });
 
-    if (point.owner == '' && !point.city) {
+    if (point.owner == 'NPC' && !point.city) {
       // Update a non-player point that does not need to be captured.
       point.owner = player;
       point.amount = amount;
@@ -330,10 +335,12 @@ function updatePoints(player, game, points, amount, citySetup=false, callback=nu
 
     if (citySetup)
       point.city = true;
+
+    changedPoints.push(point);
   }
 
   game.save(function(err, prod, numAffected) {
-    messageRoom(game.room, 'update', [point]);
+    messageRoom(game.room, 'update', changedPoints);
     if (callback)
       callback();
   });
@@ -347,21 +354,15 @@ function addArmies(player, room, row, col, amount) {
     } else if (games.length < 1) {
       return console.log('Could not find game to add armies to.')
     }
-    updatePoints(player, games[0], [{row: row, col: col}], amount);
+    updatePoints([player], games[0], [{row: row, col: col}], [amount]);
   });
 }
 
-function setupPlayer(player, room) {
-  /* Select a random starting position for the given player. */
-  Games.find({'room': room}, function(err, games){
-    if (err) {
-      return console.error(err);
-    } else if (games.length < 1) {
-      return console.log('Could not find game to create start position in.');
-    }
-    var game = games[0];
-
-    // Keeping trying points until one is not a city.
+function setupPlayerCities(game) {
+  /* Select a random starting position for each player. */
+  var citiesAdded = [];
+  var amounts = []
+  game.readyPlayers.forEach(function(player) {
     while (true) {
       var row = Math.floor(Math.random() * BOARD_DIMENSIONS[0])
       var col = Math.floor(Math.random() * BOARD_DIMENSIONS[1])
@@ -372,26 +373,14 @@ function setupPlayer(player, room) {
 
       if (!point.city) {
         console.log('Setting starting point at: ', row, col, " for ", player);
-        var points = [{row: row, col: col}]
-        return addReadyPlayer(player, game, points);
+        citiesAdded.push({row: row, col: col});
+        amounts.push(1);
+        break;
       }
     }
   });
-}
 
-function addReadyPlayer(player, game, points) {
-  /* Add the provided player to the game's list of ready players and alert the 
-     room that the player is ready. */
-  game.readyPlayers.push(player);
-
-  // If all players are ready, start the game.
-  if (game.readyPlayers.length == game.players.length) {
-    if (game.players.length > 1) {
-      game.started = true;
-    }
-  }
-
-  updatePoints(player, game, points, 1, true, function() {
+  updatePoints(game.readyPlayers, game, citiesAdded, amounts, true, function() {
     var playerInformation = {
       players: game.players,
       readyPlayers: game.readyPlayers,
@@ -400,6 +389,35 @@ function addReadyPlayer(player, game, points) {
     messageRoom(game.room, 'playerUpdate', playerInformation);
     if (game.started) 
       messageRoom(game.room, 'gameStart');
+  });
+
+}
+
+function addReadyPlayer(player, room) {
+  /* Mark given player as ready and if all players are ready start the game. */
+  Games.find({'room': room}, function(err, games){
+    if (err) {
+      return console.error(err);
+    } else if (games.length < 1) {
+      return console.log('Could not find game to mark player as ready.');
+    }
+    var game = games[0];
+
+    game.readyPlayers.push(player);
+
+    // If all players are ready, start the game.
+    if (game.readyPlayers.length == game.players.length && game.players.length > 1) {
+      game.started = true;
+      setupPlayerCities(game);
+    } else {
+      game.save(function(err, prod, numAffected) {
+        var playerInformation = {
+          players: game.players,
+          readyPlayers: game.readyPlayers,
+        };
+        messageRoom(game.room, 'playerUpdate', playerInformation);
+      });
+    }
   });
 }
 
@@ -443,7 +461,7 @@ function removePlayer(player) {
       });
     } else {
       game.save(function(err, prod, numAffected) {
-        messageRoom(game.room, 'playerLeft', {players: game.players,
+        messageRoom(game.room, 'playerUpdate', {players: game.players,
                                               readyPlayers: game.readyPlayers});
       });
     }
