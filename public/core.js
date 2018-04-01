@@ -44,11 +44,6 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
     });
   };
 
-  window.onbeforeunload = function (event) {
-    event.returnValue = 'Are you sure that you want to leave the game?';
-    return event.returnValue;
-  }
-
   socket.on('gameReady', function(data){
     $scope.$apply(function(){
       $scope.game.dimensions = data.dimensions;

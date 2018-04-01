@@ -1,5 +1,9 @@
 app.controller('waitForReadyController', function($scope, socket) {
-
+  window.onbeforeunload = function (event) {
+    event.returnValue = 'Are you sure that you want to leave the game?';
+    return event.returnValue;
+  }
+  
   socket.on('playerUpdate', function(data) {
     $scope.$apply(function(){
       $scope.game.readyPlayers = data.readyPlayers;
