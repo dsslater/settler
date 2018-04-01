@@ -5,66 +5,42 @@
 <head>
     <meta charset="utf-8">
     <link rel="icon" href="./city.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Optimize mobile viewport -->
+    <!-- Optimize mobile viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Settler</title>
+    
+    <!-- load bootstrap -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
 
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"><!-- load bootstrap -->
-    <style>
-        html                    { overflow-y:scroll; }
-        body                    { padding-top:50px; }
-        #todo-list              { margin-bottom:30px; }
-    </style>
-
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script><!-- load angular -->
+    <!-- load jquery -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <!-- load angular -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <!-- START Angular Material Library -->
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.css">
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-animate.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-aria.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-messages.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.js"></script>
+    <!-- END Angular Material Library -->
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.7/angular-resource.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script><!-- load socket.io -->
+    <!-- load socket.io -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
     <script src="core.js"></script>
+    <script src="dialog.js"></script>
     <script src="start.js"></script>
     <script src="game.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
 
 </head>
-<body ng-click="closeDialog()" ng-controller="mainController">
+<body ng-controller="mainController">
     <div class="container">
         <div class="jumbotron text-center unselectable">
-            <h1>Settler</h1><p>by David Slater</p>
+            <h1>Settler</h1>
+            <p>by David Slater</p>
         </div>
-        <div ng-if="!player.gameReady">
-            <table class="frontBoxes">
-                <tr>
-                    <td ng-if="!dialog.open">
-                        <div ng-click="openJoinDialog($event)" class="frontBox cellWrapper">
-                            <span class="frontText">JOIN GAME</span>
-                        </div>
-                    </td>
-                    <td ng-if="!dialog.open">
-                        <div ng-click="openCreateDialog($event)" class="frontBox cellWrapper">
-                            <span class="frontText">CREATE GAME</span>
-                        </div>
-                    </td>
-                    <td ng-if="dialog.open">
-                        <div ng-click="$event.stopPropagation()" class="frontBox cellWrapper">
-                            <h3>GAME NAME</h3>
-                            <input ng-model="player.gameName">
-                            
-
-                            <h3>GAME PASSWORD</h3>
-                            <input ng-model="player.gamePass">
-                            <br>
-
-                            <button ng-click="gameAction()">
-                              <span ng-if="dialog.create">CREATE</span>
-                              <span ng-if="!dialog.create">JOIN</span> GAME
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-            <h3>RULES:</h3>
-            <p>Once you create a game and at least one other person has joined and marked themselves as ready, the game will begin. You will start with a city, cities quickly grow in population. To move your people click and hold from the desired source cell to the desired destination cell. Once a player has no more cities they are removed from the game.</p>
-        </div>
+        <div ng-include="'begin.html'" ng-if="!player.gameReady"></div>
         <div ng-include="'start.html'" ng-controller="startController" ng-if="player.gameReady && !player.gameStart"></div>
         <div ng-include="'game.html'" ng-controller="gameController" ng-if="game.gameStart"></div>
     </div>

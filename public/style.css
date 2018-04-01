@@ -1,3 +1,16 @@
+html {
+  overflow-y:scroll;
+}
+
+body {
+  padding-top:50px;
+}
+
+md-radio-group, md-input-container{
+  display: inline-block;
+  text-align: left;
+}
+
 .frontBoxes {
   width: 80%;
   margin-left: 10%;
@@ -22,7 +35,6 @@
 
 td {
   border: 2px solid #000000;
-  width: 5%;
   position: relative;
   text-align: center;
   vertical-align: middle;
@@ -85,7 +97,7 @@ td .content {
 }
 
 button {
-    background-color: #eee; /* Green */
+    background-color: #eee;
     border: none;
     color: black;
     padding: 15px 32px;

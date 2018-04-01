@@ -17,13 +17,15 @@ io.on('connection', function (socket) {
   socket.on('createGame', function (data) {
     var gameName = data.gameName;
     var gamePass = data.gamePass;
-    game.createGame(gameName, gamePass, socket);
+    var height = parseInt(data.height);
+    var width = parseInt(data.width);
+    game.createGame(socket, gameName, gamePass, height, width);
   });
 
   socket.on('joinGame', function (data) {
     var gameName = data.gameName;
     var gamePass = data.gamePass;
-    game.joinGame(gameName, gamePass, socket);
+    game.joinGame(socket, gameName, gamePass);
   });
 
   socket.on('addArmies', function(data) {
@@ -44,7 +46,7 @@ io.on('connection', function (socket) {
   });
 
   socket.on('iAmReady', function(data) {
-    game.setupPlayer(socket.id, data.room);
+    game.addReadyPlayer(socket.id, data.room);
   });
 });
 

@@ -1,5 +1,3 @@
-
-
 app.controller('gameController', function($scope, socket) {
   $scope.dragStart = null;
 

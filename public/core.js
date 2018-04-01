@@ -1,4 +1,4 @@
-var app = angular.module('Settler', []);
+var app = angular.module('Settler', ['ngMaterial', 'ngMessages']);
 
 app.factory('socket', [function() {
   var socket = io.connect();
@@ -16,9 +16,8 @@ app.factory('socket', [function() {
   };
 }]);
 
-app.controller('mainController', function($scope, socket) {
+app.controller('mainController', function($scope, $mdDialog, socket) {
   $scope.dialog = {}
-  $scope.dialog.open = false;
   $scope.player = {};
   $scope.game = {};
   $scope.player.gameReady = false;
@@ -28,38 +27,27 @@ app.controller('mainController', function($scope, socket) {
   $scope.game.over = false;
   $scope.player.win = false;
 
-  $scope.player.gameName = '';
-  $scope.player.gamePass = '';
-
-  $scope.player.newGameName = '';
-  $scope.player.newGamePass = '';
-  $scope.game.blockReload = true;
+  $scope.showDialog = function(ev, create) {
+    $scope.dialog.create = create;
+    console.log($scope.dialog.create, create);
+    $mdDialog.show({
+      controller: 'dialogController',
+      locals: {
+        player: $scope.player,
+        game: $scope.game,
+        dialog: $scope.dialog,
+      },
+      templateUrl: 'dialog.html',
+      parent: angular.element(document.body),
+      targetEvent: ev,
+      clickOutsideToClose:true,
+      fullscreen: false
+    });
+  };
 
   window.onbeforeunload = function (event) {
-    event.returnValue = "Are you sure that you want to leave the game?";
+    event.returnValue = 'Are you sure that you want to leave the game?';
     return event.returnValue;
-  }
-
-  $scope.openJoinDialog = function(event) {
-    $scope.dialog.create = false;
-    $scope.dialog.open = true;
-    event.stopPropagation();
-  }
-
-  $scope.openCreateDialog = function(event) {
-    $scope.dialog.create = true;
-    $scope.dialog.open = true;
-    event.stopPropagation();
-  }
-
-  $scope.closeDialog = function() {
-    $scope.dialog.open = false;
-  }
-
-  $scope.gameAction = function() {
-    var event = $scope.dialog.create ? 'createGame' : 'joinGame';
-    socket.emit(event, {gameName: $scope.player.gameName, 
-                               gamePass: $scope.player.gamePass});
   }
 
   socket.on('gameReady', function(data){

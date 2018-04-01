@@ -2,7 +2,6 @@ var io = null
 var Games = require('./db').Games;
 
 var COLORS = ['red', 'green', 'blue', 'orange', 'purple', 'yellow', 'grey', 'pink'];
-var BOARD_DIMENSIONS = [20, 20]; // Row, Column
 var NUM_CITIES = 10;
 var GROWTH_TIME = 20000; //ms
 var CITY_BONUS = 5;
@@ -17,7 +16,7 @@ module.exports = function(ioInit) {
     joinGame: joinGame,
     addArmies: addArmies,
     moveArmies: moveArmies,
-    setupPlayer: addReadyPlayer,
+    addReadyPlayer: addReadyPlayer,
     armyGrowth: armyGrowth,
     GROWTH_TIME: GROWTH_TIME,
   }
@@ -65,25 +64,25 @@ function getColor(game, player) {
   return COLORS[colorIndex];
 }
 
-function getCities() {
+function getCities(height, width) {
   /* Return an array of NUM_CITIES random points. */
   var cities = []
   for (var i = 0; i < NUM_CITIES; i++) {
     var point = {
-      row: Math.floor(Math.random() * BOARD_DIMENSIONS[0]),
-      col: Math.floor(Math.random() * BOARD_DIMENSIONS[1])
+      row: Math.floor(Math.random() * height),
+      col: Math.floor(Math.random() * width)
     };
     cities.push(point);
   }
   return cities;
 }
 
-function initializeBoard(game) {
+function initializeBoard(game, height, width) {
   /* Initialize board with zeros and cities. */
-  var cities = getCities();
+  var cities = getCities(height, width);
   game.points = [];
-  for (var row = 0; row < BOARD_DIMENSIONS[0]; row++) {
-    for (var col = 0; col < BOARD_DIMENSIONS[1]; col++) {
+  for (var row = 0; row < height; row++) {
+    for (var col = 0; col < width; col++) {
       var city = Boolean(cities.find(function(elem) {
         return elem.row == row && elem.col == col;
       }));
@@ -109,7 +108,7 @@ function initializeBoard(game) {
   }
 }
 
-function createGame(gameName, gamePass, socket) {
+function createGame(socket, gameName, gamePass, height, width) {
   /* Create a collection for a game with the provided gameName and gamePass. */
   Games.find({gameName: gameName}, function(err, games){
     if (err) {
@@ -129,11 +128,11 @@ function createGame(gameName, gamePass, socket) {
       started: false,
       room: socket.id,
       players: [socket.id],
-      height: BOARD_DIMENSIONS[0], 
-      width: BOARD_DIMENSIONS[1]
+      height: height, 
+      width: width,
     };
 
-    initializeBoard(game);
+    initializeBoard(game, height, width);
     
     // Write game to db.
     Games.create(game, function(err, gameInst){
@@ -151,7 +150,7 @@ function createGame(gameName, gamePass, socket) {
       var gameInformation = {
         room: room, 
         id: socket.id,
-        dimensions: BOARD_DIMENSIONS,
+        dimensions: [height, width],
         points: gameInst.points,
         numPlayers: 0
       };
@@ -168,7 +167,7 @@ function createGame(gameName, gamePass, socket) {
   });  
 }
 
-function joinGame(gameName, gamePass, socket) {
+function joinGame(socket, gameName, gamePass) {
   /* Attempt to join the provided gameName. */
   Games.find({gameName: gameName}, function(err, games){
     if (err) {
@@ -198,7 +197,7 @@ function joinGame(gameName, gamePass, socket) {
       var gameInformation = {
         room: game.room,
         id: socket.id,
-        dimensions: BOARD_DIMENSIONS,
+        dimensions: [game.height, game.width],
         points: game.points,
       };
       socket.emit('gameReady', gameInformation);
@@ -361,11 +360,11 @@ function addArmies(player, room, row, col, amount) {
 function setupPlayerCities(game) {
   /* Select a random starting position for each player. */
   var citiesAdded = [];
-  var amounts = []
+  var amounts = [];
   game.readyPlayers.forEach(function(player) {
     while (true) {
-      var row = Math.floor(Math.random() * BOARD_DIMENSIONS[0])
-      var col = Math.floor(Math.random() * BOARD_DIMENSIONS[1])
+      var row = Math.floor(Math.random() * game.height)
+      var col = Math.floor(Math.random() * game.width)
 
       var point = game.points.find(function(elem) {
         return elem.row == row && elem.col == col;
