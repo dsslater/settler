@@ -1,4 +1,4 @@
-app.controller('startController', function($scope, socket) {
+app.controller('waitForReadyController', function($scope, socket) {
 
   socket.on('playerUpdate', function(data) {
     $scope.$apply(function(){

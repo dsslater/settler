@@ -1,17 +1,3 @@
-<table ng-if="gameOver(game.board)" class="frontBoxes">
-    <tr>
-        <td>
-            <div class="frontBox cellWrapper">
-                <h2 ">
-                    <span ng-if="win(game.board)">YOU WIN!!</span>
-                    <span ng-if="!win(game.board)"> Better luck next time...</span>
-                </h2>
-                <button ng-click="reload()">Play again</button>
-            </div>
-        </td>
-    </tr>
-</table>
-
 <div class="square unselectable" ng-mouseleave="clearMoveArmies()">
   <table class="board">
     <tr ng-repeat="i in game.board track by $index") ng-init='row = $index'>

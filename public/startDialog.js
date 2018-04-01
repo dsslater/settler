@@ -1,4 +1,4 @@
-app.controller('dialogController', function($scope, $mdDialog, socket, player, game, dialog) {
+app.controller('startDialogController', function($scope, $mdDialog, socket, player, game, dialog) {
   $scope.player = player;
   $scope.game = game;
   $scope.dialog = dialog;

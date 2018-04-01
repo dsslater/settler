@@ -1,9 +1,5 @@
-app.controller('gameController', function($scope, socket) {
+app.controller('gameController', function($scope, $mdDialog, socket) {
   $scope.dragStart = null;
-
-  $scope.reload = function() {
-    window.location.reload();
-  }
 
   $scope.clearMoveArmies = function() {
     $scope.dragStart = null;
@@ -46,16 +42,16 @@ app.controller('gameController', function($scope, socket) {
     return !found;
   };
 
-  $scope.gameOver = function(board) {
-    if (!$scope.game.gameStart) return false;
-    if ($scope.game.over) return true;
-
+  $scope.$watch('game.board', function(data) {
+    // When the board is changed, check if the current player's game is over.
+    if (!$scope.game.gameStart) return;
+    if ($scope.game.over) return;
     var firstPlayer = null;
     var cityFoundForThisPlayer = false;
     var multipleActivePlayers = false;
     for (var row = 0; row < $scope.game.dimensions[0]; row++) {
       for (var col = 0; col < $scope.game.dimensions[1]; col++) {
-        var cell = board[row][col];
+        var cell = $scope.game.board[row][col];
         if (cell.city && cell.owner != "NPC") {
           if (cell.owner == $scope.player.id)
             cityFoundForThisPlayer = true
@@ -72,21 +68,18 @@ app.controller('gameController', function($scope, socket) {
     if (!cityFoundForThisPlayer || !multipleActivePlayers) {
       $scope.game.over = true;
       socket.disconnect();
-      document.body.scrollTop = 245; 
-      document.documentElement.scrollTop = 245;
       window.onbeforeunload = null;
-      return true;
+      $mdDialog.show({
+        controller: 'endDialogController',
+        locals: {
+          game: $scope.game,
+          player: $scope.player,
+        },
+        templateUrl: 'endDialog.html',
+        parent: angular.element(document.body),
+        clickOutsideToClose: true,
+        fullscreen: false
+      });
     }
-  }
-
-  $scope.win = function(board) {
-    for (var row = 0; row < $scope.game.dimensions[0]; row++) {
-      for (var col = 0; col < $scope.game.dimensions[1]; col++) {
-        var cell = board[row][col];
-        if (cell.city && cell.owner != "NPC") {
-          return cell.owner == $scope.player.id;
-        }
-      }
-    }
-  }
+  }, true);
 });

@@ -29,15 +29,14 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
 
   $scope.showDialog = function(ev, create) {
     $scope.dialog.create = create;
-    console.log($scope.dialog.create, create);
     $mdDialog.show({
-      controller: 'dialogController',
+      controller: 'startDialogController',
       locals: {
         player: $scope.player,
         game: $scope.game,
         dialog: $scope.dialog,
       },
-      templateUrl: 'dialog.html',
+      templateUrl: 'startDialog.html',
       parent: angular.element(document.body),
       targetEvent: ev,
       clickOutsideToClose:true,

@@ -1,10 +1,8 @@
-<table ng-if="!game.gameStart" class="frontBoxes">
-    <tr>
-        <td>
-            <div class="frontBox cellWrapper">
-                <h2>{{game.readyPlayers.length}}/{{game.players.length}} Players Ready</h2>
-				<button ng-if="!player.ready" ng-click="playerReady()">Ready</button>
-            </div>
-        </td>
-    </tr>
-</table>
+<md-button class="md-primary md-raised" ng-click="showDialog($event, false)">
+    Join Game
+</md-button>
+<md-button class="md-primary md-raised" ng-click="showDialog($event, true)">
+    Create Game
+</md-button>
+<h3>RULES:</h3>
+<p>Once you create a game and at least one other person has joined and marked themselves as ready, the game will begin. You will start with a city, cities quickly grow in population. To move your people click and hold from the desired source cell to the desired destination cell. Once a player has no more cities they are removed from the game.</p>
