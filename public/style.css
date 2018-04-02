@@ -11,6 +11,19 @@ md-radio-group, md-input-container{
   text-align: left;
 }
 
+md-dialog-content {
+  padding-left: 25%;
+  padding-right: 25%;
+}
+
+md-dialog {
+  width: 50%;
+}
+
+md-input-container {
+  width: 100%;
+}
+
 .frontBoxes {
   width: 80%;
   margin-left: 10%;
