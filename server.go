@@ -47,18 +47,24 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Print("Creating room!\n")
 		room := CreateRoom(conn)
-		data, err := json.Marshal(room)
-		if err != nil {
-			fmt.Print(err)
-			return
-		}
-		if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
-			fmt.Print(err)
-			return
-		}
+		SendRoomIdToClient(room, conn)
 	}
-	
 }
+
+func SendRoomIdToClient(room Room, conn *websocket.Conn) {
+	wrapper := make(map[string]string)
+	wrapper["room_id"] = room.Id
+	data, err := json.Marshal(room)
+	if err != nil {
+		fmt.Print(err)
+		return
+	}
+	if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
+		fmt.Print(err)
+		return
+	}
+}
+
 
 func GenerateRandomId() string {
 	b := make([]byte, 64)
