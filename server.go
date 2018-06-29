@@ -59,7 +59,7 @@ func SendRoomIdToClient(room Room, conn *websocket.Conn) {
 	wrapper := make(map[string]interface{})
 	wrapper["room_id"] = room.Id
 	wrapper["type"] = CONNECT_RESPONSE
-	data, err := json.Marshal(room)
+	data, err := json.Marshal(wrapper)
 	if err != nil {
 		fmt.Print(err)
 		return
