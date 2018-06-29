@@ -13,6 +13,10 @@ import (
 	"time"
 )
 
+const (
+	CONNECT_RESPONSE = 0
+)
+
 type ConnectMessage struct {
 	Room string `json:"room"`
 	Password string `json:"password"`
@@ -52,8 +56,9 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 }
 
 func SendRoomIdToClient(room Room, conn *websocket.Conn) {
-	wrapper := make(map[string]string)
+	wrapper := make(map[string]interface{})
 	wrapper["room_id"] = room.Id
+	wrapper["type"] = CONNECT_RESPONSE
 	data, err := json.Marshal(room)
 	if err != nil {
 		fmt.Print(err)
