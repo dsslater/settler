@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/websocket"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -45,12 +46,18 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 		fmt.Print("Adding to room: " + message.Room + "\n")
 	} else {
 		fmt.Print("Creating room!\n")
-		CreateRoom(conn)
+		room := CreateRoom(conn)
+		data, err := json.Marshal(room)
+		if err != nil {
+			fmt.Print(err)
+			return
+		}
+		if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
+			fmt.Print(err)
+			return
+		}
 	}
-	if err := conn.WriteMessage(websocket.TextMessage, []byte("TEST")); err != nil {
-		fmt.Print(err)
-		return
-	}
+	
 }
 
 func GenerateRandomId() string {
@@ -61,7 +68,7 @@ func GenerateRandomId() string {
 	return string(b)
 }
 
-func CreateRoom(conn *websocket.Conn) {
+func CreateRoom(conn *websocket.Conn) Room{
 	player := Player{
 		Id: GenerateRandomId(),
 		Conn: conn,
@@ -72,7 +79,8 @@ func CreateRoom(conn *websocket.Conn) {
 		Id: GenerateRandomId(),
 		Players: players,
 	}
-	fmt.Print(room)
+	// Add to global datastructure
+	return room
 }
 
 
