@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	okBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 	CONNECT_RESPONSE = 0
 )
 
@@ -32,7 +33,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     CheckOriginFunc,
 }
 
-const okBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+var ActiveGames map[string]Room
 var db *sql.DB
 
 func Connect(w http.ResponseWriter, r *http.Request) {
@@ -90,12 +91,13 @@ func CreateRoom(conn *websocket.Conn) Room{
 		Id: GenerateRandomId(),
 		Players: players,
 	}
-	// Add to global datastructure
+	ActiveGames[room.Id] = room
 	return room
 }
 
 
 func main() {
+	ActiveGames = make(map[string]Room)
 	rand.Seed(time.Now().UnixNano())
 	data, err := ioutil.ReadFile("./database_login")
 	if err != nil {
