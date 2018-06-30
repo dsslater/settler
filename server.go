@@ -16,13 +16,14 @@ import (
 const (
 	okBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 	CONNECT_RESPONSE = 0
-	SIZES map[int][]int= {
-		0: [10, 10],
-		1: [15, 15],
-		2: [20, 20],
-		3: [30, 30],
-	}
 )
+
+var SIZES map[int][]int= {
+	0: [10, 10],
+	1: [15, 15],
+	2: [20, 20],
+	3: [30, 30],
+}
 
 type ConnectMessage struct {
 	Room     string `json:"room"`
@@ -147,7 +148,7 @@ func CreateGameTable(id string, dim []int) error {
 	}
 	defer insertionStmt.Close()
 
-	_, err := stmt.Exec(vals...)
+	_, err = stmt.Exec(vals...)
 	if err != nil {
 		fmt.Print("Executing statement failed for insertion in CreateGameTable: ", err)
 		return err
