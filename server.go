@@ -41,7 +41,15 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     CheckOriginFunc,
 }
 
-var ActiveGames map[string]Room
+type errorString struct {
+	s string
+}
+
+func (e *errorString) Error() string {
+	return e.s
+}
+
+var ActiveRooms map[string]Room
 var db *sql.DB
 
 func Connect(w http.ResponseWriter, r *http.Request) {
@@ -57,9 +65,10 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 	}
 	if message.Room != "" {
 		fmt.Print("Adding to room: " + message.Room + "\n")
+		JoinRoom(conn, message.Room, message.Password)
 	} else {
 		fmt.Print("Creating room!\n")
-		room, err := CreateRoom(conn, message.Size)
+		room, err := CreateRoom(conn, message.Password, message.Size)
 		if err != nil {
 			return
 		}
@@ -91,8 +100,22 @@ func GenerateRandomId() string {
 	return string(b)
 }
 
+func JoinRoom(conn *websocket.Conn, roomId string, password string) (Room, error) {
+	room, ok := ActiveRooms[roomId]
+	if !ok {
+		return room, &errorString{"Room not found."}
+	}
+	player := Player{
+		Id: GenerateRandomId(),
+		Conn: conn,
+	}
+	players := append(room.Players, player)
+	room.Players = players
+	return room, nil
+}
 
-func CreateRoom(conn *websocket.Conn, size int) (Room, error){
+
+func CreateRoom(conn *websocket.Conn, password string, size int) (Room, error){
 	player := Player{
 		Id: GenerateRandomId(),
 		Conn: conn,
@@ -102,6 +125,7 @@ func CreateRoom(conn *websocket.Conn, size int) (Room, error){
 	dim := SIZES[size]
 	room := Room{
 		Id: GenerateRandomId(),
+		Password: password,
 		Players: players,
 		Dimensions: dim,
 	}
@@ -109,7 +133,7 @@ func CreateRoom(conn *websocket.Conn, size int) (Room, error){
 	if err != nil {
 		return room, err
 	}
-	ActiveGames[room.Id] = room
+	ActiveRooms[room.Id] = room
 	return room, nil
 }
 
