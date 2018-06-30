@@ -18,7 +18,7 @@ const (
 	CONNECT_RESPONSE = 0
 )
 
-var SIZES = map[int][]int {
+var SIZES = map[int][2]int {
 	0: [2]int{10, 10},
 	1: [2]int{15, 15},
 	2: [2]int{20, 20},
