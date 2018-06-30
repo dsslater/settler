@@ -104,7 +104,7 @@ func CreateRoom(conn *websocket.Conn) (Room, error){
 }
 
 
-func CreateGameTable(string id) error {
+func CreateGameTable(id string) error {
 	CreationStmtText := fmt.Sprintf("CREATE TABLE %s (row int, col int, value int, owner varchar(255)) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ROW_FORMAT=DYNAMIC;", id)
 	stmt, err := db.Prepare(CreationStmtText)
 	if err != nil {
