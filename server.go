@@ -63,17 +63,18 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 		fmt.Print(err)
 		return
 	}
+	var room Room
 	if message.Room != "" {
 		fmt.Print("Adding to room: " + message.Room + "\n")
-		JoinRoom(conn, message.Room, message.Password)
+		room, err = JoinRoom(conn, message.Room, message.Password)	
 	} else {
 		fmt.Print("Creating room!\n")
 		room, err := CreateRoom(conn, message.Password, message.Size)
-		if err != nil {
-			return
-		}
-		SendRoomIdToClient(room, conn)
 	}
+	if err != nil {
+		return
+	}
+	SendRoomIdToClient(room, conn)
 }
 
 func SendRoomIdToClient(room Room, conn *websocket.Conn) {
