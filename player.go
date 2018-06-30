@@ -7,4 +7,5 @@ import (
 type Player struct {
 	Id   string
 	Conn *websocket.Conn
+	Ready bool
 }

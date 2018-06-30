@@ -14,8 +14,9 @@ import (
 )
 
 const (
-	okBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-	CONNECT_RESPONSE = 0
+	SAFE_BYTES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+	CONNECT_MESSAGE = 0
+	READY_MESSAGE = 1
 )
 
 var SIZES = map[int][2]int {
@@ -29,6 +30,12 @@ type ConnectMessage struct {
 	Room     string `json:"room"`
 	Password string `json:"password"`
 	Size     int    `json:"size"`
+}
+
+type Message struct {
+	RoomId  string      `json:"room_id"`
+	Type    int         `json:"type"`
+	Payload interface{} `json:"payload"`
 }
 
 func CheckOriginFunc (r *http.Request) bool {
@@ -63,24 +70,57 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 		fmt.Print(err)
 		return
 	}
+	var player Player
 	var room Room
 	if message.Room != "" {
 		fmt.Print("Adding to room: " + message.Room + "\n")
-		room, err = JoinRoom(conn, message.Room, message.Password)	
+		player, room, err = JoinRoom(conn, message.Room, message.Password)	
 	} else {
 		fmt.Print("Creating room!\n")
-		room, err = CreateRoom(conn, message.Password, message.Size)
+		player, room, err = CreateRoom(conn, message.Password, message.Size)
 	}
 	if err != nil {
 		return
 	}
-	SendRoomIdToClient(room, conn)
+	SendRoomToClient(conn, player, room, CONNECT_MESSAGE)
+	GameLoop(conn, player)
 }
 
-func SendRoomIdToClient(room Room, conn *websocket.Conn) {
+
+func GameLoop(conn *websocket.Conn, player Player) {
+	// Main loop that drives entire game
+	for {
+		var message Message
+		if err = conn.ReadJSON(&message); err != nil {
+			fmt.Print(err)
+			return
+		}
+		if message.Type == READY_MESSAGE {
+			HandleReadyMessage(message.Payload)
+		}
+	}
+}
+
+
+func HandleReadyMessage(payload interface{}) {
+	// cast to usable type
+	fmt.Print(payload)
+}
+
+
+func SendRoomToClient(conn *websocket.Conn, player Player, room Room, type int) {
 	wrapper := make(map[string]interface{})
 	wrapper["room_id"] = room.Id
-	wrapper["type"] = CONNECT_RESPONSE
+	wrapper["player_id"] = player.Id
+	wrapper["num_players"] = len(room.Players)
+	numReadyPlayers := 0
+	for _, player := range room.Players {
+		if player.Ready {
+			numReadyPlayers++
+		}
+	}
+	wrapper["num_ready_player"] = numReadyPlayers
+	wrapper["type"] = type
 	data, err := json.Marshal(wrapper)
 	if err != nil {
 		fmt.Print(err)
@@ -96,33 +136,34 @@ func SendRoomIdToClient(room Room, conn *websocket.Conn) {
 func GenerateRandomId() string {
 	b := make([]byte, 64)
 	for i := range b {
-	b[i] = okBytes[rand.Intn(len(okBytes))]
+	b[i] = SAFE_BYTES[rand.Intn(len(SAFE_BYTES))]
 	}
 	return string(b)
 }
 
-func JoinRoom(conn *websocket.Conn, roomId string, password string) (Room, error) {
-	room, ok := ActiveRooms[roomId]
-	if !ok {
-		return room, &errorString{"Room not found."}
-	}
+func JoinRoom(conn *websocket.Conn, roomId string, password string) (Player, Room, error) {
 	player := Player{
 		Id: GenerateRandomId(),
 		Conn: conn,
 	}
-	players := append(room.Players, player)
-	room.Players = players
-	return room, nil
+
+	room, ok := ActiveRooms[roomId]
+	if !ok {
+		return player, room, &errorString{"Room not found."}
+	}
+
+	room.Players[player.Id] = player
+	return player, room, nil
 }
 
 
-func CreateRoom(conn *websocket.Conn, password string, size int) (Room, error){
+func CreateRoom(conn *websocket.Conn, password string, size int) (Player, Room, error){
 	player := Player{
 		Id: GenerateRandomId(),
 		Conn: conn,
 	}
-	var players []Player
-	players = append(players, player)
+	players = make(map[string]Player)
+	players[player.Id] = player
 	dim := SIZES[size]
 	room := Room{
 		Id: GenerateRandomId(),
@@ -132,10 +173,10 @@ func CreateRoom(conn *websocket.Conn, password string, size int) (Room, error){
 	}
 	err := CreateGameTable(room.Id, dim)
 	if err != nil {
-		return room, err
+		return player, room, err
 	}
 	ActiveRooms[room.Id] = room
-	return room, nil
+	return player, room, nil
 }
 
 
@@ -209,8 +250,8 @@ func main() {
 		if err := http.ListenAndServe(":80", nil); err != nil {
 			fmt.Print("Catastrophic error serving", err)
 			fmt.Print("Restarting server.")
-													}
-												}
+		}
+	}
 }
 
 
