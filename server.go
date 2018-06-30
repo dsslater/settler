@@ -114,7 +114,7 @@ func CreateRoom(conn *websocket.Conn, size int) (Room, error){
 }
 
 
-func CreateGameTable(id string, dim []int) error {
+func CreateGameTable(id string, dim [2]int) error {
 	creationStmtText := fmt.Sprintf("CREATE TABLE %s (row int, col int, value int, owner varchar(255)) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ROW_FORMAT=DYNAMIC;", id)
 	createStmt, err := db.Prepare(creationStmtText)
 	if err != nil {
@@ -130,17 +130,16 @@ func CreateGameTable(id string, dim []int) error {
 	}
 
 	insertionStmtText := fmt.Sprintf("INSERT INTO %s (row, col, value, owner) VALUES ", id)
-	vals = []interface{}{}
-	for {
-		for {
+	var vals = []interface{}{}
+	for r := 0; r < dim[0]; r++{
+		for c := 0; c < dim[1]; c++{
 			insertionStmtText += "(?, ?, ?, ?),"
 			vals = append(vals, r, c, 0, "")
 		}
 	}
 	
-	insertionStmtText = insertionStmtText[0:len(sqlStr)-2]
+	insertionStmtText = insertionStmtText[0:len(insertionStmtText)-2]
 
-	res, _ := stmt.Exec(vals...)
 	insertionStmt, err:= db.Prepare(insertionStmtText)
 	if err != nil {
 		fmt.Print("Preparing insertion statement failed for CreateGameTable: ", err)
@@ -148,7 +147,7 @@ func CreateGameTable(id string, dim []int) error {
 	}
 	defer insertionStmt.Close()
 
-	_, err = stmt.Exec(vals...)
+	_, err = insertionStmt.Exec(vals...)
 	if err != nil {
 		fmt.Print("Executing statement failed for insertion in CreateGameTable: ", err)
 		return err
