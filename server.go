@@ -138,7 +138,7 @@ func CreateGameTable(id string, dim [2]int) error {
 		}
 	}
 	
-	insertionStmtText = insertionStmtText[0:len(insertionStmtText)-2]
+	insertionStmtText = insertionStmtText[0:len(insertionStmtText)-1]
 
 	insertionStmt, err:= db.Prepare(insertionStmtText)
 	if err != nil {
