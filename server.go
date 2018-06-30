@@ -84,7 +84,7 @@ func GenerateRandomId() string {
 }
 
 
-func CreateRoom(conn *websocket.Conn) Room, error{
+func CreateRoom(conn *websocket.Conn) (Room, error){
 	player := Player{
 		Id: GenerateRandomId(),
 		Conn: conn,
