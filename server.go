@@ -19,10 +19,10 @@ const (
 )
 
 var SIZES = map[int][]int {
-	0: [10, 10],
-	1: [15, 15],
-	2: [20, 20],
-	3: [30, 30],
+	0: [2]int{10, 10},
+	1: [2]int{15, 15},
+	2: [2]int{20, 20},
+	3: [2]int{30, 30},
 }
 
 type ConnectMessage struct {
