@@ -69,7 +69,7 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 		room, err = JoinRoom(conn, message.Room, message.Password)	
 	} else {
 		fmt.Print("Creating room!\n")
-		room, err := CreateRoom(conn, message.Password, message.Size)
+		room, err = CreateRoom(conn, message.Password, message.Size)
 	}
 	if err != nil {
 		return
