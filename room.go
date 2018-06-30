@@ -1,6 +1,7 @@
 package main
 
 type Room struct {
-	Id string
-	Players []Player
+	Id         string
+	Players    []Player
+	Dimensions []int
 }

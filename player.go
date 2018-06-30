@@ -5,6 +5,6 @@ import (
 )
 
 type Player struct {
-	Id string
+	Id   string
 	Conn *websocket.Conn
 }

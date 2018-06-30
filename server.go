@@ -16,11 +16,18 @@ import (
 const (
 	okBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 	CONNECT_RESPONSE = 0
+	SIZES map[int][]int= {
+		0: [10, 10],
+		1: [15, 15],
+		2: [20, 20],
+		3: [30, 30],
+	}
 )
 
 type ConnectMessage struct {
-	Room string `json:"room"`
+	Room     string `json:"room"`
 	Password string `json:"password"`
+	Size     int    `json:"size"`
 }
 
 func CheckOriginFunc (r *http.Request) bool {
@@ -51,7 +58,7 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 		fmt.Print("Adding to room: " + message.Room + "\n")
 	} else {
 		fmt.Print("Creating room!\n")
-		room, err := CreateRoom(conn)
+		room, err := CreateRoom(conn, message.Size)
 		if err != nil {
 			return
 		}
@@ -84,18 +91,20 @@ func GenerateRandomId() string {
 }
 
 
-func CreateRoom(conn *websocket.Conn) (Room, error){
+func CreateRoom(conn *websocket.Conn, size int) (Room, error){
 	player := Player{
 		Id: GenerateRandomId(),
 		Conn: conn,
 	}
 	var players []Player
 	players = append(players, player)
+	dim := SIZES[size]
 	room := Room{
 		Id: GenerateRandomId(),
 		Players: players,
+		Dimensions: dim,
 	}
-	err := CreateGameTable(room.Id)
+	err := CreateGameTable(room.Id, dim)
 	if err != nil {
 		return room, err
 	}
@@ -104,18 +113,43 @@ func CreateRoom(conn *websocket.Conn) (Room, error){
 }
 
 
-func CreateGameTable(id string) error {
-	CreationStmtText := fmt.Sprintf("CREATE TABLE %s (row int, col int, value int, owner varchar(255)) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ROW_FORMAT=DYNAMIC;", id)
-	stmt, err := db.Prepare(CreationStmtText)
+func CreateGameTable(id string, dim []int) error {
+	creationStmtText := fmt.Sprintf("CREATE TABLE %s (row int, col int, value int, owner varchar(255)) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ROW_FORMAT=DYNAMIC;", id)
+	createStmt, err := db.Prepare(creationStmtText)
 	if err != nil {
-		fmt.Print("Preparing statement failed for CreateGameTable: ", err)
+		fmt.Print("Preparing creation statement failed for CreateGameTable: ", err)
 		return err
 	}
-	defer stmt.Close()
+	defer createStmt.Close()
 
-	 _, err = stmt.Exec()
+	 _, err = createStmt.Exec()
 	if err != nil {
-		fmt.Print("CreateGameTable SQL command failed: ", err)
+		fmt.Print("CreateGameTable creation SQL command failed: ", err)
+		return err
+	}
+
+	insertionStmtText := fmt.Sprintf("INSERT INTO %s (row, col, value, owner) VALUES ", id)
+	vals = []interface{}{}
+	for {
+		for {
+			insertionStmtText += "(?, ?, ?, ?),"
+			vals = append(vals, r, c, 0, "")
+		}
+	}
+	
+	insertionStmtText = insertionStmtText[0:len(sqlStr)-2]
+
+	res, _ := stmt.Exec(vals...)
+	insertionStmt, err:= db.Prepare(insertionStmtText)
+	if err != nil {
+		fmt.Print("Preparing insertion statement failed for CreateGameTable: ", err)
+		return err
+	}
+	defer insertionStmt.Close()
+
+	_, err := stmt.Exec(vals...)
+	if err != nil {
+		fmt.Print("Executing statement failed for insertion in CreateGameTable: ", err)
 		return err
 	}
 
