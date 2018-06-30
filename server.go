@@ -91,7 +91,7 @@ func GameLoop(conn *websocket.Conn, player Player) {
 	// Main loop that drives entire game
 	for {
 		var message Message
-		if err = conn.ReadJSON(&message); err != nil {
+		if err := conn.ReadJSON(&message); err != nil {
 			fmt.Print(err)
 			return
 		}
@@ -162,7 +162,7 @@ func CreateRoom(conn *websocket.Conn, password string, size int) (Player, Room, 
 		Id: GenerateRandomId(),
 		Conn: conn,
 	}
-	players = make(map[string]Player)
+	players := make(map[string]Player)
 	players[player.Id] = player
 	dim := SIZES[size]
 	room := Room{
