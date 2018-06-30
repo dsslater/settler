@@ -182,7 +182,7 @@ func CreateGameTable(id string, dim [2]int) error {
 
 
 func main() {
-	ActiveGames = make(map[string]Room)
+	ActiveRooms = make(map[string]Room)
 	rand.Seed(time.Now().UnixNano())
 	data, err := ioutil.ReadFile("./database_login")
 	if err != nil {
