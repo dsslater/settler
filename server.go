@@ -51,8 +51,8 @@ func Connect(w http.ResponseWriter, r *http.Request) {
 		fmt.Print("Adding to room: " + message.Room + "\n")
 	} else {
 		fmt.Print("Creating room!\n")
-		room := CreateRoom(conn)
-		if room == nil {
+		room, err := CreateRoom(conn)
+		if err != nil {
 			return
 		}
 		SendRoomIdToClient(room, conn)
@@ -84,7 +84,7 @@ func GenerateRandomId() string {
 }
 
 
-func CreateRoom(conn *websocket.Conn) Room{
+func CreateRoom(conn *websocket.Conn) Room, error{
 	player := Player{
 		Id: GenerateRandomId(),
 		Conn: conn,
@@ -97,25 +97,25 @@ func CreateRoom(conn *websocket.Conn) Room{
 	}
 	err := CreateGameTable(room.Id)
 	if err != nil {
-		return nil
+		return room, err
 	}
 	ActiveGames[room.Id] = room
-	return room
+	return room, nil
 }
 
 
-func CreateRoomTable(string id) error {
+func CreateGameTable(string id) error {
 	CreationStmtText := fmt.Sprintf("CREATE TABLE %s (row int, col int, value int, owner varchar(255)) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ROW_FORMAT=DYNAMIC;", id)
 	stmt, err := db.Prepare(CreationStmtText)
 	if err != nil {
-		fmt.Print("Preparing statement failed for CreateRoomTable: ", err)
+		fmt.Print("Preparing statement failed for CreateGameTable: ", err)
 		return err
 	}
 	defer stmt.Close()
 
 	 _, err = stmt.Exec()
 	if err != nil {
-		fmt.Print("CreateRoomTable SQL command failed: ", err)
+		fmt.Print("CreateGameTable SQL command failed: ", err)
 		return err
 	}
 
