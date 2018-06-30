@@ -108,7 +108,7 @@ func HandleReadyMessage(payload interface{}) {
 }
 
 
-func SendRoomToClient(conn *websocket.Conn, player Player, room Room, type int) {
+func SendRoomToClient(conn *websocket.Conn, player Player, room Room, messageType int) {
 	wrapper := make(map[string]interface{})
 	wrapper["room_id"] = room.Id
 	wrapper["player_id"] = player.Id
@@ -120,7 +120,7 @@ func SendRoomToClient(conn *websocket.Conn, player Player, room Room, type int) 
 		}
 	}
 	wrapper["num_ready_player"] = numReadyPlayers
-	wrapper["type"] = type
+	wrapper["type"] = messageType
 	data, err := json.Marshal(wrapper)
 	if err != nil {
 		fmt.Print(err)
