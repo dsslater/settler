@@ -1,0 +1,24 @@
+<md-dialog>
+    <form ng-cloak>
+        <md-toolbar name="gameForm">
+            <div class="md-toolbar-tools">
+                <h2>
+                    <span ng-if="win()">YOU WIN!!</span>
+                    <span ng-if="!win()"> Better luck next time...</span>
+                </h2>
+                <span flex></span>
+            </div>
+        </md-toolbar>
+
+        <md-dialog-content>
+            <div class="md-dialog-content">
+                Reload the page to play again.
+            </div>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button md-autofocus class="md-raised" ng-click="reload()">
+                Play again
+        </md-dialog-actions>
+    </form>
+</md-dialog>
