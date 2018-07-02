@@ -26,16 +26,20 @@ var SIZES = map[int][2]int {
 	3: [2]int{30, 30},
 }
 
-type ConnectMessage struct {
-	Room     string `json:"room"`
-	Password string `json:"password"`
-	Size     int    `json:"size"`
+type CreateMessage struct {
+	Password string `json:"gamePass"`
+	Height   int    `json:"height"`
+	Width    int    `json:"width"`
+}
+
+type JoinMessage struct {
+	GameName string `json:"gameName"`
+	Password string `json:"gamePass"`
 }
 
 type Message struct {
-	RoomId  string      `json:"room_id"`
-	Type    int         `json:"type"`
-	Payload interface{} `json:"payload"`
+	Event int		  `json:"event"`
+	Data  interface{} `json:"data"`
 }
 
 func CheckOriginFunc (r *http.Request) bool {
@@ -59,52 +63,90 @@ func (e *errorString) Error() string {
 var ActiveRooms map[string]Room
 var db *sql.DB
 
-func Connect(w http.ResponseWriter, r *http.Request) {
+
+func GameLoop(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Print(err)
 		return
 	}
-	var message ConnectMessage
-	if err = conn.ReadJSON(&message); err != nil {
-		fmt.Print(err)
-		return
-	}
-	var player Player
-	var room Room
-	if message.Room != "" {
-		fmt.Print("Adding to room: " + message.Room + "\n")
-		player, room, err = JoinRoom(conn, message.Room, message.Password)	
-	} else {
-		fmt.Print("Creating room!\n")
-		player, room, err = CreateRoom(conn, message.Password, message.Size)
-	}
-	if err != nil {
-		return
-	}
-	SendRoomToClient(conn, player, room, CONNECT_MESSAGE)
-	GameLoop(conn, player)
-}
-
-
-func GameLoop(conn *websocket.Conn, player Player) {
 	// Main loop that drives entire game
 	for {
 		var message Message
 		if err := conn.ReadJSON(&message); err != nil {
+			// TODO: implement disconnect code
 			fmt.Print(err)
 			return
 		}
-		if message.Type == READY_MESSAGE {
-			HandleReadyMessage(message.Payload)
+
+		if message.Event == "createGame" {
+			createGame(conn, message.Payload)
+		} else if message.Event == "joinGame" {
+			joinGame(conn, message.Payload)
+		} else if message.Event == "iAmReady" {
+			playerReady(conn, message.Payload)
+		} else if message.Event == "moveArmies" {
+			moveArmies(conn, message.Payload)
 		}
 	}
 }
 
 
-func HandleReadyMessage(payload interface{}) {
-	// cast to usable type
-	fmt.Print(payload)
+func createGame(conn *websocket.Conn, data interface{}) (Player, Room, error){
+	message, ok := data.(CreateMessage)
+	password := message.Password
+	height := message.Height
+	width := message.Width
+
+	player := Player{
+		Id: GenerateRandomId(),
+		Conn: conn,
+	}
+	players := make(map[string]Player)
+	players[player.Id] = player
+	room := Room{
+		Id: GenerateRandomId(),
+		Password: password,
+		Players:  players,
+		Height:   height,
+		Width:    width
+	}
+	err := CreateGameTable(room.Id, height, width)
+	if err != nil {
+		return player, room, err
+	}
+	ActiveRooms[room.Id] = room
+	return player, room, nil
+}
+
+
+func joinGame(conn *websocket.Conn, data interface{}) (Player, Room, error){
+	message, ok := data.(JoinMessage)
+	room := message.Room
+	password := message.Password
+
+	player := Player{
+		Id: GenerateRandomId(),
+		Conn: conn,
+	}
+
+	room, ok := ActiveRooms[roomId]
+	if !ok {
+		return player, room, &errorString{"Room not found."}
+	}
+
+	room.Players[player.Id] = player
+	return player, room, nil
+}
+
+
+func playerReady(conn *websocket.Conn, data interface{}) {
+	// TODO
+}
+
+
+func moveArmies(conn *websocket.Conn, data interface{}) {
+	// TODO
 }
 
 
@@ -141,46 +183,11 @@ func GenerateRandomId() string {
 	return string(b)
 }
 
-func JoinRoom(conn *websocket.Conn, roomId string, password string) (Player, Room, error) {
-	player := Player{
-		Id: GenerateRandomId(),
-		Conn: conn,
-	}
-
-	room, ok := ActiveRooms[roomId]
-	if !ok {
-		return player, room, &errorString{"Room not found."}
-	}
-
-	room.Players[player.Id] = player
-	return player, room, nil
-}
 
 
-func CreateRoom(conn *websocket.Conn, password string, size int) (Player, Room, error){
-	player := Player{
-		Id: GenerateRandomId(),
-		Conn: conn,
-	}
-	players := make(map[string]Player)
-	players[player.Id] = player
-	dim := SIZES[size]
-	room := Room{
-		Id: GenerateRandomId(),
-		Password: password,
-		Players: players,
-		Dimensions: dim,
-	}
-	err := CreateGameTable(room.Id, dim)
-	if err != nil {
-		return player, room, err
-	}
-	ActiveRooms[room.Id] = room
-	return player, room, nil
-}
 
 
-func CreateGameTable(id string, dim [2]int) error {
+func CreateGameTable(id string, height int, width int) error {
 	creationStmtText := fmt.Sprintf("CREATE TABLE %s (row int, col int, value int, owner varchar(255)) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ROW_FORMAT=DYNAMIC;", id)
 	createStmt, err := db.Prepare(creationStmtText)
 	if err != nil {
@@ -197,8 +204,8 @@ func CreateGameTable(id string, dim [2]int) error {
 
 	insertionStmtText := fmt.Sprintf("INSERT INTO %s (row, col, value, owner) VALUES ", id)
 	var vals = []interface{}{}
-	for r := 0; r < dim[0]; r++{
-		for c := 0; c < dim[1]; c++{
+	for r := 0; r < height; r++{
+		for c := 0; c < width; c++{
 			insertionStmtText += "(?, ?, ?, ?),"
 			vals = append(vals, r, c, 0, "")
 		}
@@ -245,7 +252,8 @@ func main() {
 		panic(err.Error())
 	}
 	fmt.Print("Connected to SQL\n")
-	http.HandleFunc("/connect", Connect)
+	http.Handle("/", http.FileServer(http.Dir("./public")))
+	http.HandleFunc("/game", GameLoop)
 	for {
 		if err := http.ListenAndServe(":80", nil); err != nil {
 			fmt.Print("Catastrophic error serving", err)
