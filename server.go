@@ -19,6 +19,7 @@ const (
 	READY_MESSAGE = 1
 )
 
+
 var SIZES = map[int][2]int {
 	0: [2]int{10, 10},
 	1: [2]int{15, 15},
@@ -26,21 +27,25 @@ var SIZES = map[int][2]int {
 	3: [2]int{30, 30},
 }
 
+
 type CreateMessage struct {
 	Password string `json:"gamePass"`
 	Height   int    `json:"height"`
 	Width    int    `json:"width"`
 }
 
+
 type JoinMessage struct {
 	GameName string `json:"gameName"`
 	Password string `json:"gamePass"`
 }
 
+
 type Message struct {
 	Event int		  `json:"event"`
 	Data  interface{} `json:"data"`
 }
+
 
 type GameInformation struct {
 	Room       string `json:"room"`
@@ -50,9 +55,17 @@ type GameInformation struct {
 	NumPlayers int    `json:"numPlayers"`
 }
 
+
+type PlayerInformation struct {
+	Players      []Player `json:"players"`
+	ReadyPlayers []Player `json:"readyPlayers"`
+}
+
+
 func CheckOriginFunc (r *http.Request) bool {
 	return true
 }
+
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -149,14 +162,16 @@ func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
 		Id: player.id,
 		Dimensions: [2]int{game.Height, game.Width},
 		Points: game.getPoints(),
-		NumPlayers: 0
+		NumPlayers: 0,
 	};
+
 	emit(conn, 'gameReady', gameInformation);
 
-	playerInformation := interface{
-		players: game.Players,
-		readyPlayers: game.getReadyPlayers()
+	playerInformation := PlayerInformation{
+		Players: game.Players,
+		ReadyPlayers: game.getReadyPlayers()
 	};
+	
 	emitToGame(game, 'playerUpdate', playerInformation);
 	setupGrowth();
 }
