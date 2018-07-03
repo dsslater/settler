@@ -114,8 +114,9 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 
 
 func createGame(conn *websocket.Conn, data interface{}) {
-	message, ok := data.(CreateMessage)
-	if !ok {
+	var message CreateMessage
+	err := json.Unmarshal([]byte(data), message)
+	if err != nil {
 		fmt.Print("Unable to cast data to CreateMessage")
 		return
 	}
@@ -143,7 +144,12 @@ func createGame(conn *websocket.Conn, data interface{}) {
 
 
 func joinGame(conn *websocket.Conn, data interface{}) {
-	message, ok := data.(JoinMessage)
+	var message JoinMessage
+	err := json.Unmarshal([]byte(data), message)
+	if err != nil {
+		fmt.Print("Unable to cast data to CreateMessage")
+		return
+	}
 	gameId := message.GameName
 	password := message.Password
 
