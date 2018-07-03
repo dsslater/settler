@@ -159,7 +159,7 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
 	gameInformation := GameInformation{
 		Room: game.Id, 
-		Id: player.id,
+		Id: player.Id,
 		Dimensions: [2]int{game.Height, game.Width},
 		Points: game.getPoints(),
 		NumPlayers: 0,
