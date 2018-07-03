@@ -73,13 +73,16 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     CheckOriginFunc,
 }
 
+
 type errorString struct {
 	s string
 }
 
+
 func (e *errorString) Error() string {
 	return e.s
 }
+
 
 var ActiveGames map[string]Game
 var db *sql.DB
@@ -96,7 +99,7 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 		var message Message
 		if err := conn.ReadJSON(&message); err != nil {
 			// TODO: implement disconnect code
-			fmt.Print(err)
+			fmt.Print("Error reading JSON from socket: ", err)
 			return
 		}
 
