@@ -3,6 +3,7 @@ var app = angular.module('Settler', ['ngMaterial', 'ngMessages']);
 app.factory('socket', [function() {
   var events = {} // map event names to registered functions
   var socket = new WebSocket("ws://35.202.116.91/game");
+  // TODO: on message trigger event
 
   return {
     on: function(eventName, callback){

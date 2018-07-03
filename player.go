@@ -9,3 +9,11 @@ type Player struct {
 	Conn *websocket.Conn
 	Ready bool
 }
+
+func createPlayer(conn *websocket.Conn) Player {
+	player := Player{
+		Id: GenerateRandomId(),
+		Conn: conn,
+	}
+	return player
+}

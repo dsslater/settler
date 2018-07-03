@@ -60,7 +60,7 @@ func (e *errorString) Error() string {
 	return e.s
 }
 
-var ActiveRooms map[string]Room
+var ActiveGames map[string]Game
 var db *sql.DB
 
 
@@ -92,51 +92,80 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func createGame(conn *websocket.Conn, data interface{}) (Player, Room, error){
+func createGame(conn *websocket.Conn, data interface{}) {
 	message, ok := data.(CreateMessage)
 	password := message.Password
 	height := message.Height
 	width := message.Width
 
-	player := Player{
-		Id: GenerateRandomId(),
-		Conn: conn,
-	}
+	player := createPlayer(conn)
 	players := make(map[string]Player)
 	players[player.Id] = player
-	room := Room{
+	game := Game{
 		Id: GenerateRandomId(),
 		Password: password,
 		Players:  players,
 		Height:   height,
 		Width:    width
 	}
-	err := CreateGameTable(room.Id, height, width)
+	err := CreateGameTable(game.Id, height, width)
 	if err != nil {
-		return player, room, err
+		return
 	}
-	ActiveRooms[room.Id] = room
-	return player, room, nil
+	ActiveGames[game.Id] = game
+	sendPlayerData(conn, player, game)
 }
 
 
-func joinGame(conn *websocket.Conn, data interface{}) (Player, Room, error){
+func joinGame(conn *websocket.Conn, data interface{}) {
 	message, ok := data.(JoinMessage)
-	room := message.Room
+	gameId := message.GameName
 	password := message.Password
 
-	player := Player{
-		Id: GenerateRandomId(),
-		Conn: conn,
-	}
+	player := createPlayer(conn)
 
-	room, ok := ActiveRooms[roomId]
+	game, ok := ActiveGames[gameId]
 	if !ok {
-		return player, room, &errorString{"Room not found."}
+		fmt.Print("Game not found.")
+		return
 	}
 
-	room.Players[player.Id] = player
-	return player, room, nil
+	game.Players[player.Id] = player
+	sendPlayerData(conn, player, game)
+}
+
+
+func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
+	gameInformation := interface{
+		room: game.Id, 
+		id: player.id,
+		dimensions: [2]int{game.Height, game.Width},
+		points: gameInst.points,
+		numPlayers: 0
+	};
+	emit(conn, 'gameReady', gameInformation);
+
+	playerInformation := interface{
+		players: game.Players,
+		readyPlayers: game.getReadyPlayers()
+	};
+	emitToGame(game, 'playerUpdate', playerInformation);
+	setupGrowth();
+}
+
+
+func emitToGame(game Game, event string, data interface{}) {
+	// TODO
+}
+
+
+func emit(conn *websocket.Conn, event string, data interface{}) {
+	// TODO
+}
+
+
+func setupGrowth() {
+	// TODO manage a go routine for growth
 }
 
 
@@ -150,13 +179,13 @@ func moveArmies(conn *websocket.Conn, data interface{}) {
 }
 
 
-func SendRoomToClient(conn *websocket.Conn, player Player, room Room, messageType int) {
+func SendGameToClient(conn *websocket.Conn, player Player, game Game, messageType int) {
 	wrapper := make(map[string]interface{})
-	wrapper["room_id"] = room.Id
+	wrapper["room_id"] = game.Id
 	wrapper["player_id"] = player.Id
-	wrapper["num_players"] = len(room.Players)
+	wrapper["num_players"] = len(game.Players)
 	numReadyPlayers := 0
-	for _, player := range room.Players {
+	for _, player := range game.Players {
 		if player.Ready {
 			numReadyPlayers++
 		}
@@ -182,9 +211,6 @@ func GenerateRandomId() string {
 	}
 	return string(b)
 }
-
-
-
 
 
 func CreateGameTable(id string, height int, width int) error {
@@ -231,7 +257,7 @@ func CreateGameTable(id string, height int, width int) error {
 
 
 func main() {
-	ActiveRooms = make(map[string]Room)
+	ActiveGames = make(map[string]Game)
 	rand.Seed(time.Now().UnixNano())
 	data, err := ioutil.ReadFile("./database_login")
 	if err != nil {
@@ -261,6 +287,3 @@ func main() {
 		}
 	}
 }
-
-
-
