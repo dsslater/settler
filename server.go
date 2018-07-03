@@ -310,7 +310,7 @@ func main() {
 		panic(err.Error())
 	}
 	fmt.Print("Connected to SQL\n")
-	http.Handle("/", http.FileServer(http.Dir("./public")))
+	http.Handle("/", http.FileServer(http.Dir("./go-public")))
 	http.HandleFunc("/game", GameLoop)
 	for {
 		if err := http.ListenAndServe(":80", nil); err != nil {
