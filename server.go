@@ -42,7 +42,7 @@ type JoinMessage struct {
 
 
 type Message struct {
-	Event int		  `json:"event"`
+	Event string	  `json:"event"`
 	Data  interface{} `json:"data"`
 }
 
@@ -165,14 +165,14 @@ func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
 		NumPlayers: 0,
 	};
 
-	emit(conn, 'gameReady', gameInformation);
+	emit(conn, "gameReady", gameInformation);
 
 	playerInformation := PlayerInformation{
 		Players: game.Players,
-		ReadyPlayers: game.getReadyPlayers()
+		ReadyPlayers: game.getReadyPlayers(),
 	};
-	
-	emitToGame(game, 'playerUpdate', playerInformation);
+
+	emitToGame(game, "playerUpdate", playerInformation);
 	setupGrowth();
 }
 
