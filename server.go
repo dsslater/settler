@@ -303,10 +303,49 @@ func CreateGameTable(id string, height int, width int) error {
 	return nil
 }
 
+func deleteOldTables() {
+	deleteAllTablesText := "SELECT concat('DROP TABLE IF EXISTS `', table_name, '`;') FROM information_schema.tables WHERE table_schema = 'settler';"
+	deleteAllTablesStmt, err := db.Prepare(deleteAllTablesText)
+	if err != nil {
+		fmt.Print("Preparing deleteAllTablesStmt failed: ", err)
+		return
+	}
+
+	rows, err := deleteAllTablesStmt.Query()
+	if err != nil {
+		fmt.Print("Query failed on deleteAllTablesStmt call: ", err)
+		return
+	}
+	defer rows.Close()
+
+	if err = rows.Err(); err != nil {
+		fmt.Print("Rows had an error on deleteAllTablesStmt call: ", err)
+		return
+	}
+
+	for rows.Next() {
+		var deleteCmd string
+		err := rows.Scan(&deleteCmd)
+		if err != nil {
+			fmt.Print("SQL scan failed for deleteCmd: ", err)
+			return
+		}
+
+		deleteStmt, err := db.Prepare(deleteCmd)
+
+		_, err = deleteStmt.Exec()
+		if err != nil {
+			fmt.Print("deleteStmt SQL command failed: ", err)
+			return
+		}
+	}
+}
+
 
 func main() {
 	ActiveGames = make(map[string]Game)
 	rand.Seed(time.Now().UnixNano())
+	// Connect to SQL DB
 	data, err := ioutil.ReadFile("./database_login")
 	if err != nil {
 		fmt.Print("Err reading database login file")
@@ -326,7 +365,9 @@ func main() {
 		panic(err.Error())
 	}
 	fmt.Print("Connected to SQL\n")
-	// TODO: delete all old tables
+	// Clean up old tables
+	deleteOldTables()
+	// Set up http server
 	http.Handle("/", http.FileServer(http.Dir("./go-public")))
 	http.HandleFunc("/game", GameLoop)
 	for {
