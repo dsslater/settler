@@ -203,7 +203,7 @@ func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
 
 
 func emitToGame(game Game, event string, data interface{}) {
-	for _, player := range Game.Players {
+	for _, player := range game.Players {
 		emit(player.Conn, event, data)
 	}
 }
