@@ -203,12 +203,25 @@ func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
 
 
 func emitToGame(game Game, event string, data interface{}) {
-	// TODO
+	for _, player := range Game.Players {
+		emit(player.Conn, event, data)
+	}
 }
 
 
 func emit(conn *websocket.Conn, event string, data interface{}) {
-	// TODO
+	wrapper := make(map[string]interface{})
+	wrapper["event"] = event
+	wrapper["data"] = data
+	bytes, err := json.Marshal(wrapper)
+	if err != nil {
+		fmt.Print("Failure the Marshal in emit: ", err)
+		return
+	}
+	if err := conn.WriteMessage(websocket.TextMessage, bytes); err != nil {
+		fmt.Print("Failure writing to websocket in emit: ", err)
+		return
+	}
 }
 
 
