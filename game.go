@@ -21,3 +21,8 @@ func (g Game) getReadyPlayers() []Player {
 func (g Game) getNumReadyPlayers() int {
 	return len(g.getReadyPlayers())
 }
+
+func (g Game) getPoints() []int {
+	var points []int
+	return points
+}

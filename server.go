@@ -42,6 +42,14 @@ type Message struct {
 	Data  interface{} `json:"data"`
 }
 
+type GameInformation struct {
+	Room       string `json:"room"`
+	Id         string `json:"id"`
+	Dimensions [2]int `json:"dimensions"`
+	Points     []int  `json:"points"`
+	NumPlayers int    `json:"numPlayers"`
+}
+
 func CheckOriginFunc (r *http.Request) bool {
 	return true
 }
@@ -106,7 +114,7 @@ func createGame(conn *websocket.Conn, data interface{}) {
 		Password: password,
 		Players:  players,
 		Height:   height,
-		Width:    width
+		Width:    width,
 	}
 	err := CreateGameTable(game.Id, height, width)
 	if err != nil {
@@ -136,12 +144,12 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 
 
 func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
-	gameInformation := interface{
-		room: game.Id, 
-		id: player.id,
-		dimensions: [2]int{game.Height, game.Width},
-		points: gameInst.points,
-		numPlayers: 0
+	gameInformation := GameInformation{
+		Room: game.Id, 
+		Id: player.id,
+		Dimensions: [2]int{game.Height, game.Width},
+		Points: game.getPoints(),
+		NumPlayers: 0
 	};
 	emit(conn, 'gameReady', gameInformation);
 
