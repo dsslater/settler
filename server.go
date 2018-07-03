@@ -164,7 +164,7 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 	password := message.Password
 
 	player := createPlayer(conn)
-
+	// TODO: not currently working
 	game, ok := ActiveGames[gameId]
 	if !ok {
 		fmt.Print("Game not found.")
@@ -183,7 +183,7 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 
 func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
 	gameInformation := GameInformation{
-		Room: game.Id, 
+		Room: game.Id,
 		Id: player.Id,
 		Dimensions: [2]int{game.Height, game.Width},
 		Points: game.getPoints(),
@@ -326,6 +326,7 @@ func main() {
 		panic(err.Error())
 	}
 	fmt.Print("Connected to SQL\n")
+	// TODO: delete all old tables
 	http.Handle("/", http.FileServer(http.Dir("./go-public")))
 	http.HandleFunc("/game", GameLoop)
 	for {
