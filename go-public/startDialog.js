@@ -13,8 +13,8 @@ app.controller('startDialogController', function($scope, $mdDialog, socket, play
     socket.emit(event, {
       gameName: $scope.player.gameName, 
       gamePass: $scope.player.gamePass,
-      height: height,
-      width: width,
+      height: parseInt(height),
+      width: parseInt(width),
     });
   }
 
