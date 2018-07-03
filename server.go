@@ -115,6 +115,10 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 
 func createGame(conn *websocket.Conn, data interface{}) {
 	message, ok := data.(CreateMessage)
+	if !ok {
+		fmt.Print("Unable to cast data to CreateMessage")
+		return
+	}
 	password := message.Password
 	height := message.Height
 	width := message.Width
@@ -148,6 +152,11 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 	game, ok := ActiveGames[gameId]
 	if !ok {
 		fmt.Print("Game not found.")
+		return
+	}
+
+	if password != game.Password {
+		fmt.Print("Wrong password!")
 		return
 	}
 
