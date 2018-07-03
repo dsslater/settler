@@ -114,16 +114,15 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 
 
 func createGame(conn *websocket.Conn, data interface{}) {
-	fmt.Print(data)
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		fmt.Print("Error with data in createGame:" + err.Error())
 		return
 	}
-	fmt.Print(string(bytes))
-	message, ok := data.(CreateMessage)
-	if !ok {
-		fmt.Print("Unable to cast data to CreateMessage")
+	var message CreateMessage
+	err = json.Unmarshal(bytes, message)
+	if err != nil {
+		fmt.Print("Unable to unmarshal data to CreateMessage:" + err.Error())
 		return
 	}
 	password := message.Password
@@ -150,7 +149,17 @@ func createGame(conn *websocket.Conn, data interface{}) {
 
 
 func joinGame(conn *websocket.Conn, data interface{}) {
-	message, ok := data.(JoinMessage)
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		fmt.Print("Error with data in joinGame:" + err.Error())
+		return
+	}
+	var message JoinMessage
+	err = json.Unmarshal(bytes, message)
+	if err != nil {
+		fmt.Print("Unable to unmarshal data to JoinMessage:" + err.Error())
+		return
+	}
 	gameId := message.GameName
 	password := message.Password
 
