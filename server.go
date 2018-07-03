@@ -101,13 +101,13 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if message.Event == "createGame" {
-			createGame(conn, message.Payload)
+			createGame(conn, message.Data)
 		} else if message.Event == "joinGame" {
-			joinGame(conn, message.Payload)
+			joinGame(conn, message.Data)
 		} else if message.Event == "iAmReady" {
-			playerReady(conn, message.Payload)
+			playerReady(conn, message.Data)
 		} else if message.Event == "moveArmies" {
-			moveArmies(conn, message.Payload)
+			moveArmies(conn, message.Data)
 		}
 	}
 }
