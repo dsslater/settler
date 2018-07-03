@@ -8,6 +8,14 @@ type Game struct {
 	Width    int
 }
 
+func (g Game) getPlayers() []Player {
+	var players []Player
+	for _, player := range g.Players {
+		players = append(players, player)
+	}
+	return players
+}
+
 func (g Game) getReadyPlayers() []Player {
 	var players []Player
 	for _, player := range g.Players {

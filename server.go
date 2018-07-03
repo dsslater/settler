@@ -168,7 +168,7 @@ func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
 	emit(conn, "gameReady", gameInformation);
 
 	playerInformation := PlayerInformation{
-		Players: game.Players,
+		Players: game.getPlayers(),
 		ReadyPlayers: game.getReadyPlayers(),
 	};
 
