@@ -120,7 +120,7 @@ func createGame(conn *websocket.Conn, data interface{}) {
 		return
 	}
 	var message CreateMessage
-	err = json.Unmarshal(bytes, message)
+	err = json.Unmarshal(bytes, &message)
 	if err != nil {
 		fmt.Print("Unable to unmarshal data to CreateMessage:" + err.Error())
 		return
@@ -155,7 +155,7 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 		return
 	}
 	var message JoinMessage
-	err = json.Unmarshal(bytes, message)
+	err = json.Unmarshal(bytes, &message)
 	if err != nil {
 		fmt.Print("Unable to unmarshal data to JoinMessage:" + err.Error())
 		return
