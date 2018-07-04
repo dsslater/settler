@@ -117,6 +117,7 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 
 
 func createGame(conn *websocket.Conn, data interface{}) {
+	fmt.Print("Creating game.")
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		fmt.Print("Error with data in createGame:" + err.Error())
@@ -152,6 +153,7 @@ func createGame(conn *websocket.Conn, data interface{}) {
 
 
 func joinGame(conn *websocket.Conn, data interface{}) {
+	fmt.Print("Joining game.")
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		fmt.Print("Error with data in joinGame:" + err.Error())
