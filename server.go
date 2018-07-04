@@ -295,17 +295,16 @@ func CreateGameTable(id string, height int, width int) error {
 		return err
 	}
 
-	insertionStmtText := fmt.Sprintf("INSERT INTO %s (row, col, value, owner) VALUES ", id)
+	insertionStmtText := fmt.Sprintf("INSERT INTO %s (row, col, city, amount, owner, color) VALUES ", id)
 	var vals = []interface{}{}
 	for r := 0; r < height; r++{
 		for c := 0; c < width; c++{
-			insertionStmtText += "(?, ?, ?, ?),"
+			insertionStmtText += "(?, ?, ?, ?, ?, ?),"
 			vals = append(vals, r, c, 0, "")
 		}
 	}
 	
 	insertionStmtText = insertionStmtText[0:len(insertionStmtText)-1]
-	fmt.Print(insertionStmtText, "\n")
 	insertionStmt, err:= db.Prepare(insertionStmtText)
 	if err != nil {
 		fmt.Print("Preparing insertion statement failed for CreateGameTable: ", err)
