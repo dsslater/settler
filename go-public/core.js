@@ -11,11 +11,14 @@ app.factory('socket', [function() {
       handler = events[event]
       data = message['data'];
       handler(data);
+    } else {
+      console.log("Can't find callback for: " + event);
     }
   }
 
   return {
     on: function(eventName, callback){
+      console.log("Registered event for: " + eventName);
       if (callback == null) {
         delete events[eventName];
       } else {
