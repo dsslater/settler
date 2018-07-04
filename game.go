@@ -58,7 +58,7 @@ func (g Game) getCells() []Cell {
 
 	for rows.Next() {
 		var cell Cell
-		err := rows.Scan(&cell)
+		err := rows.Scan(&cell.Row, &cell.Col, &cell.City, &cell.Amount, &cell.Owner, &cell.Color)
 		if err != nil {
 			fmt.Print("SQL scan failed for getCells: ", err)
 			return cells
