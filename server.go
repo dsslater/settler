@@ -300,7 +300,7 @@ func CreateGameTable(id string, height int, width int) error {
 	for r := 0; r < height; r++{
 		for c := 0; c < width; c++{
 			insertionStmtText += "(?, ?, ?, ?, ?, ?),"
-			vals = append(vals, r, c, 0, "")
+			vals = append(vals, r, c, false, 0, "", "")
 		}
 	}
 	
