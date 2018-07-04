@@ -5,8 +5,9 @@ app.factory('socket', [function() {
   var socket = new WebSocket("ws://35.202.116.91/game");
   socket.onmessage = function (evt) { 
     message = JSON.parse(evt.data);
-    if (message['event'] in events) {
-      handler = message['event']
+    event = message['event']
+    if (event in events) {
+      handler = events[event]
       data = message['data'];
       handler(data);
     }
