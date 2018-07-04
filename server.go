@@ -51,7 +51,7 @@ type GameInformation struct {
 	Room       string `json:"room"`
 	Id         string `json:"id"`
 	Dimensions [2]int `json:"dimensions"`
-	Points     []int  `json:"points"`
+	Points     []Cell  `json:"points"`
 	NumPlayers int    `json:"numPlayers"`
 }
 
