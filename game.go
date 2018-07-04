@@ -65,5 +65,6 @@ func (g Game) getCells() []Cell {
 		}
 		cells = append(cells, cell)
 	}
+	fmt.Print("CELLS: ", cells)
 	return cells
 }
