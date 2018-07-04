@@ -99,7 +99,7 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 		var message Message
 		if err := conn.ReadJSON(&message); err != nil {
 			// TODO: implement disconnect code
-			fmt.Print("Error reading JSON from socket: ", err)
+			fmt.Print("Error reading JSON from socket: ", err, "\n")
 			return
 		}
 
@@ -117,7 +117,7 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 
 
 func createGame(conn *websocket.Conn, data interface{}) {
-	fmt.Print("Creating game.")
+	fmt.Print("Creating game.\n")
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		fmt.Print("Error with data in createGame:" + err.Error())
@@ -153,7 +153,7 @@ func createGame(conn *websocket.Conn, data interface{}) {
 
 
 func joinGame(conn *websocket.Conn, data interface{}) {
-	fmt.Print("Joining game.")
+	fmt.Print("Joining game.\n")
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		fmt.Print("Error with data in joinGame:" + err.Error())
@@ -305,7 +305,7 @@ func CreateGameTable(id string, height int, width int) error {
 	}
 	
 	insertionStmtText = insertionStmtText[0:len(insertionStmtText)-1]
-
+	fmt.Print(insertionStmtText, "\n")
 	insertionStmt, err:= db.Prepare(insertionStmtText)
 	if err != nil {
 		fmt.Print("Preparing insertion statement failed for CreateGameTable: ", err)
