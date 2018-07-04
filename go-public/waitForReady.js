@@ -6,8 +6,7 @@ app.controller('waitForReadyController', function($scope, socket) {
   
   socket.on('playerUpdate', function(data) {
     $scope.$apply(function(){
-      var readyPlayers = data.readyPlayers;
-      $scope.game.readyPlayers = readyPlayers ? readyPlayers : [];
+      $scope.game.readyPlayers = data.readyPlayers ? data.readyPlayers : [];
       $scope.game.players = data.players;
     });
   });
