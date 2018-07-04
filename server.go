@@ -191,7 +191,7 @@ func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
 		Room: game.Id,
 		Id: player.Id,
 		Dimensions: [2]int{game.Height, game.Width},
-		Points: game.getPoints(),
+		Points: game.getCells(),
 		NumPlayers: 0,
 	};
 
@@ -281,7 +281,7 @@ func GenerateRandomId() string {
 
 
 func CreateGameTable(id string, height int, width int) error {
-	creationStmtText := fmt.Sprintf("CREATE TABLE %s (row int, col int, value int, owner varchar(255)) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ROW_FORMAT=DYNAMIC;", id)
+	creationStmtText := fmt.Sprintf("CREATE TABLE %s (row int, col int, city bool, amount int, owner varchar(255), color varchar(100)) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ROW_FORMAT=DYNAMIC;", id)
 	createStmt, err := db.Prepare(creationStmtText)
 	if err != nil {
 		fmt.Print("Preparing creation statement failed for CreateGameTable: ", err)
