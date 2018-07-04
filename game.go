@@ -40,19 +40,19 @@ func (g Game) getCells() []Cell {
 	getCellsText := fmt.Sprintf("SELECT * FROM %s;", g.Id)
 	getCellsStmt, err := db.Prepare(getCellsText)
 	if err != nil {
-		fmt.Print("Preparing getCells statement failed: ", err)
+		fmt.Print("Preparing getCells statement failed: ", err, "\n")
 		return cells
 	}
 	defer getCellsStmt.Close()
 	rows, err := getCellsStmt.Query()
 	if err != nil {
-		fmt.Print("Query failed on getCellsStmt call: ", err)
+		fmt.Print("Query failed on getCellsStmt call: ", err, "\n")
 		return cells
 	}
 	defer rows.Close()
 
 	if err = rows.Err(); err != nil {
-		fmt.Print("Rows had an error on deleteAllTablesStmt call: ", err)
+		fmt.Print("Rows had an error on deleteAllTablesStmt call: ", err, "\n")
 		return cells
 	}
 
@@ -60,11 +60,11 @@ func (g Game) getCells() []Cell {
 		var cell Cell
 		err := rows.Scan(&cell.Row, &cell.Col, &cell.City, &cell.Amount, &cell.Owner, &cell.Color)
 		if err != nil {
-			fmt.Print("SQL scan failed for getCells: ", err)
+			fmt.Print("SQL scan failed for getCells: ", err, "\n")
 			return cells
 		}
 		cells = append(cells, cell)
 	}
-	fmt.Print("CELLS: ", cells)
+	fmt.Print("CELLS: ", cells, "\n")
 	return cells
 }
