@@ -53,7 +53,6 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
     $mdDialog.show({
       controller: 'startDialogController',
       locals: {
-        player: $scope.player,
         game: $scope.game,
         dialog: $scope.dialog,
       },

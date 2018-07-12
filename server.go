@@ -36,7 +36,7 @@ type CreateMessage struct {
 
 
 type JoinMessage struct {
-	GameName string `json:"gameName"`
+	GameId string `json:"gameId"`
 	Password string `json:"gamePass"`
 }
 
@@ -166,7 +166,7 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 		return
 	}
 	fmt.Print("JoinMessage: ", message)
-	gameId := message.GameName
+	gameId := message.GameId
 	password := message.Password
 
 	player := createPlayer(conn)
