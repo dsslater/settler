@@ -17,6 +17,7 @@ const (
 	SAFE_BYTES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 	CONNECT_MESSAGE = 0
 	READY_MESSAGE = 1
+	NUM_NPC_CITIES = 10
 )
 
 
@@ -147,14 +148,26 @@ func createGame(conn *websocket.Conn, data interface{}) {
 		Players:  players,
 		Height:   height,
 		Width:    width,
+		Started:  false,
 	}
 	err = CreateGameTable(game.Id, height, width)
 	if err != nil {
 		return
 	}
+	err = addNPCCities(game)
 	ActiveGames[game.Id] = game
 	sendGameData(conn, player, game)
 	sendPlayerData(conn, player, game)
+}
+
+
+func addNPCCities(game Game) error{
+	for var i := 0; i < NUM_NPC_CITIES; i++ {
+		row := rand.Intn(game.Height)
+		col := rand.Intn(game.Width)
+		index := [2]int{row, col}
+		game.MarkCity(index, "")
+	}
 }
 
 
@@ -200,7 +213,7 @@ func sendGameData(conn *websocket.Conn, player Player, game Game) {
 		GameId: game.Id,
 		Id: player.Id,
 		Dimensions: [2]int{game.Height, game.Width},
-		Points: game.getCells(),
+		Points: game.GetCells(),
 		NumPlayers: 0,
 	};
 
@@ -274,11 +287,43 @@ func playerReady(conn *websocket.Conn, data interface{}) {
 		return
 	}
 
-	fmt.Print(player, "\n")
-
 	player.Ready = true
-	fmt.Print(player, "\n")
-	sendPlayerData(conn, *player, game)
+	if len(game.getPlayers()) == len(game.getReadyPlayers()) {
+		startGame(conn, game)
+	} else {
+		sendPlayerData(conn, *player, game)
+	}
+}
+
+
+func startGame(conn *websocket.Conn, game Game) {
+	// add cities for each player marked as being owned by them
+	playerCities := make(map[[2]int]bool)
+	for _, player := range game.ReadyPlayers {
+		var row int
+		var col int
+		var index [2]int
+		for {
+			row = rand.Intn(game.Height)
+			col = rand.Intn(game.Width)
+			index = [2]int{row, col}
+			_, ok := playerCities[index]
+			if !ok {
+				cell, err := game.GetCell(index)
+				if err != nil {
+					fmt.Print("Failure accessing cell at index: ", index, " with error: ", err, "\n")
+					return
+				}
+				if !cell.City {
+					break
+				}
+			}
+		}
+		playerCities[index] = true
+		game.MarkCity(index, player.Id)
+	}
+	// send game update
+	// send gameStart
 }
 
 
