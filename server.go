@@ -261,7 +261,7 @@ func playerReady(conn *websocket.Conn, data interface{}) {
 		return
 	}
 	gameId := message.GameId
-	playerId := message.playerId
+	playerId := message.PlayerId
 	game, ok := ActiveGames[gameId]
 	if !ok {
 		fmt.Print("Game not found.\n")
