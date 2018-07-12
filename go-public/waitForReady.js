@@ -3,6 +3,7 @@ app.controller('waitForReadyController', function($scope, socket) {
     event.returnValue = 'Are you sure that you want to leave the game?';
     return event.returnValue;
   }
+  $scope.link = "http://35.202.116.91?room=" + $scope.player.room;
   
   socket.on('playerUpdate', function(data) {
     $scope.$apply(function(){
