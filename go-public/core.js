@@ -147,4 +147,12 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
       });
     });
   });
+
+  // Check to see if the user has been linked to an existing game
+  var url_string = window.location.href
+  var url = new URL(url_string);
+  var room = url.searchParams.get("room");
+  if (room != null) {
+    console.log("Joining: " + room)
+  }
 });
