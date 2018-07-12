@@ -7,7 +7,7 @@ import (
 type Game struct {
 	Id       string
 	Password string
-	Players  map[string]Player
+	Players  map[string]*Player
 	Height   int
 	Width    int
 }
