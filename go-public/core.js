@@ -101,7 +101,7 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
         }
       }
       
-      $scope.player.room = data.room;
+      $scope.game.gameIds = data.gameIds;
       $scope.player.id = data.id;
       $scope.game.players = [$scope.player.id];
       $scope.player.gameReady = true;
@@ -109,31 +109,31 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
   });
 
   socket.on('unkownGameCreationError', function(data) {
-    alert('Sorry, we were unable to create ' + $scope.player.gameName
+    alert('Sorry, we were unable to create ' + $scope.game.gameId
           + '. Please try creating a new game.');
   });
 
   socket.on('wrongPassword', function(data) {
-    alert('Sorry, this is not the password for ' + $scope.player.gameName)
+    alert('Sorry, this is not the password for ' + $scope.game.gameId)
   });
 
   socket.on('gameNameUsedError', function(data) {
-    alert('Sorry, ' + $scope.player.gameName + ' is already in use, '
+    alert('Sorry, ' + $scope.game.gameId + ' is already in use, '
           + 'please try another.');
   });
 
   socket.on('unknownGameJoinError', function(data) {
-    alert('Sorry, we were unable to connect to ' + $scope.player.gameName
+    alert('Sorry, we were unable to connect to ' + $scope.game.gameId
           + '. Please try creating a new game.');
   });
 
   socket.on('gameNotFound', function(data) {
-    alert('Sorry, we were unable to find ' + $scope.player.gameName
+    alert('Sorry, we were unable to find ' + $scope.game.gameId
           + '. Please try creating a new game.');
   });
 
   socket.on('gameStarted', function(data) {
-    alert('Sorry, ' + $scope.player.gameName + ' has already started.');
+    alert('Sorry, ' + $scope.game.gameId + ' has already started.');
   });
 
   socket.on('update', function(datas){
@@ -151,8 +151,9 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
   // Check to see if the user has been linked to an existing game
   var url_string = window.location.href
   var url = new URL(url_string);
-  var room = url.searchParams.get("room");
-  if (room != null) {
-    console.log("Joining: " + room)
+  var gameId = url.searchParams.get("gameId");
+  if (gameId != null) {
+    $scope.game.gameId = gameId;
+    $scope.showDialog(null, false);
   }
 });

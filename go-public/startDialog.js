@@ -2,7 +2,6 @@ app.controller('startDialogController', function($scope, $mdDialog, socket, play
   $scope.player = player;
   $scope.game = game;
   $scope.dialog = dialog;
-  $scope.player.gameName = '';
   $scope.player.gamePass = '';
   $scope.game.size = "20x20";
 
@@ -11,7 +10,7 @@ app.controller('startDialogController', function($scope, $mdDialog, socket, play
     var height = $scope.game.size.split('x')[0];
     var width = $scope.game.size.split('x')[1];
     socket.emit(event, {
-      gameName: $scope.player.gameName, 
+      gameId: $scope.game.gameId, 
       gamePass: $scope.player.gamePass,
       height: parseInt(height),
       width: parseInt(width),

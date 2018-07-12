@@ -48,7 +48,7 @@ type Message struct {
 
 
 type GameInformation struct {
-	Room       string `json:"room"`
+	GameId   string `json:"gameId"`
 	Id         string `json:"id"`
 	Dimensions [2]int `json:"dimensions"`
 	Points     []Cell  `json:"points"`
@@ -190,7 +190,7 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 
 func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
 	gameInformation := GameInformation{
-		Room: game.Id,
+		GameId: game.Id,
 		Id: player.Id,
 		Dimensions: [2]int{game.Height, game.Width},
 		Points: game.getCells(),
@@ -245,31 +245,6 @@ func playerReady(conn *websocket.Conn, data interface{}) {
 
 func moveArmies(conn *websocket.Conn, data interface{}) {
 	// TODO
-}
-
-
-func SendGameToClient(conn *websocket.Conn, player Player, game Game, messageType int) {
-	wrapper := make(map[string]interface{})
-	wrapper["room_id"] = game.Id
-	wrapper["player_id"] = player.Id
-	wrapper["num_players"] = len(game.Players)
-	numReadyPlayers := 0
-	for _, player := range game.Players {
-		if player.Ready {
-			numReadyPlayers++
-		}
-	}
-	wrapper["num_ready_player"] = numReadyPlayers
-	wrapper["type"] = messageType
-	data, err := json.Marshal(wrapper)
-	if err != nil {
-		fmt.Print(err)
-		return
-	}
-	if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
-		fmt.Print(err)
-		return
-	}
 }
 
 

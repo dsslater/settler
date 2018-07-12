@@ -18,15 +18,6 @@
         <md-dialog-content>
             <div class="md-dialog-content">
                 <md-input-container>
-                    <label>Game name</label>
-                    <input required name="name" ng-model="player.gameName">
-                    <div ng-messages="gameForm.name.$error">
-                        <div ng-message="required">Game name is required.</div>
-                    </div>
-                </md-input-container>
-                <br>
-
-                <md-input-container>
                     <label>Game password</label>
                     <input name="password" ng-model="player.gamePass">
                 </md-input-container>
@@ -46,12 +37,7 @@
         </md-dialog-content>
 
         <md-dialog-actions layout="row">
-            <md-button md-autofocus ng-if="player.gameName" class="md-raised" ng-click="gameAction();closeDialog()">
-                <span ng-if="dialog.create">CREATE </span>
-                <span ng-if="!dialog.create">JOIN </span>
-                GAME
-            </md-button>
-            <md-button ng-if="!player.gameName" ng-disabled="true" class="md-raised">
+            <md-button md-autofocus class="md-raised" ng-click="gameAction();closeDialog()">
                 <span ng-if="dialog.create">CREATE </span>
                 <span ng-if="!dialog.create">JOIN </span>
                 GAME
