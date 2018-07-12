@@ -139,7 +139,7 @@ func createGame(conn *websocket.Conn, data interface{}) {
 	width := message.Width
 
 	player := createPlayer(conn)
-	players := make(map[string]Player)
+	players := make(map[string]*Player)
 	players[player.Id] = &player
 	game := Game{
 		Id: GenerateRandomId(),
@@ -278,7 +278,7 @@ func playerReady(conn *websocket.Conn, data interface{}) {
 
 	player.Ready = true
 	fmt.Print(player, "\n")
-	sendPlayerData(conn, player, game)
+	sendPlayerData(conn, *player, game)
 }
 
 

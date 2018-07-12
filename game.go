@@ -15,7 +15,7 @@ type Game struct {
 func (g Game) getPlayers() []Player {
 	var players []Player
 	for _, player := range g.Players {
-		players = append(players, player)
+		players = append(players, *player)
 	}
 	return players
 }
@@ -24,7 +24,7 @@ func (g Game) getReadyPlayers() []Player {
 	var players []Player
 	for _, player := range g.Players {
 		if player.Ready {
-			players = append(players, player)
+			players = append(players, *player)
 		}
 	}
 	return players
