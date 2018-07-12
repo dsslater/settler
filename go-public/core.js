@@ -100,7 +100,7 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
         }
       }
       
-      $scope.game.gameId = data.gameId;
+      $scope.game.id = data.gameId;
       $scope.player.id = data.id;
       $scope.game.players = [$scope.player.id];
       $scope.player.gameReady = true;
@@ -108,31 +108,31 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
   });
 
   socket.on('unkownGameCreationError', function(data) {
-    alert('Sorry, we were unable to create ' + $scope.game.gameId
+    alert('Sorry, we were unable to create ' + $scope.game.id
           + '. Please try creating a new game.');
   });
 
   socket.on('wrongPassword', function(data) {
-    alert('Sorry, this is not the password for ' + $scope.game.gameId)
+    alert('Sorry, this is not the password for ' + $scope.game.id)
   });
 
   socket.on('gameNameUsedError', function(data) {
-    alert('Sorry, ' + $scope.game.gameId + ' is already in use, '
+    alert('Sorry, ' + $scope.game.id + ' is already in use, '
           + 'please try another.');
   });
 
   socket.on('unknownGameJoinError', function(data) {
-    alert('Sorry, we were unable to connect to ' + $scope.game.gameId
+    alert('Sorry, we were unable to connect to ' + $scope.game.id
           + '. Please try creating a new game.');
   });
 
   socket.on('gameNotFound', function(data) {
-    alert('Sorry, we were unable to find ' + $scope.game.gameId
+    alert('Sorry, we were unable to find ' + $scope.game.id
           + '. Please try creating a new game.');
   });
 
   socket.on('gameStarted', function(data) {
-    alert('Sorry, ' + $scope.game.gameId + ' has already started.');
+    alert('Sorry, ' + $scope.game.id + ' has already started.');
   });
 
   socket.on('update', function(datas){
@@ -152,7 +152,7 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
   var url = new URL(url_string);
   var gameId = url.searchParams.get("gameId");
   if (gameId != null) {
-    $scope.game.gameId = gameId;
+    $scope.game.id = gameId;
     $scope.showDialog(null, false);
   }
 });

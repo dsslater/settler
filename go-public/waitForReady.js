@@ -3,7 +3,7 @@ app.controller('waitForReadyController', function($scope, socket) {
     event.returnValue = 'Are you sure that you want to leave the game?';
     return event.returnValue;
   }
-  $scope.link = "http://35.202.116.91?gameId=" + $scope.game.gameId;
+  $scope.link = "http://35.202.116.91?gameId=" + $scope.game.id;
   
   socket.on('playerUpdate', function(data) {
     $scope.$apply(function(){
@@ -35,7 +35,10 @@ app.controller('waitForReadyController', function($scope, socket) {
       alert("There must be at least two players to play.");
     } else {
       $scope.player.ready = true;
-      socket.emit('iAmReady', {gameId: $scope.game.gameId});
+      socket.emit('iAmReady', {
+        gameId: $scope.game.id,
+        playerId: $scope.player.id
+      });
     }  
   }
 });

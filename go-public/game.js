@@ -14,7 +14,7 @@ app.controller('gameController', function($scope, $mdDialog, socket) {
           end_row: row,
           start_col: $scope.dragStart[1],
           end_col: col, 
-          gameId: $scope.game.gameId
+          gameId: $scope.game.id
         };
         socket.emit('moveArmies', payload);
         $scope.clearMoveArmies();

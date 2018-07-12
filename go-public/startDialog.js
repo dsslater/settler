@@ -9,7 +9,7 @@ app.controller('startDialogController', function($scope, $mdDialog, socket, game
     var height = $scope.game.size.split('x')[0];
     var width = $scope.game.size.split('x')[1];
     socket.emit(event, {
-      gameId: $scope.game.gameId, 
+      gameId: $scope.game.id, 
       gamePass: $scope.game.gamePass,
       height: parseInt(height),
       width: parseInt(width),
