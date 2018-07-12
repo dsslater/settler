@@ -112,9 +112,17 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if message.Event == "createGame" {
-			game, player = createGame(conn, message.Data)
+			game, player, err = createGame(conn, message.Data)
+			if err != nil {
+				fmt.Print("Catastrophic failure creating game. Disconnecting.")
+				return
+			}
 		} else if message.Event == "joinGame" {
-			game, player = joinGame(conn, message.Data)
+			game, player, err = joinGame(conn, message.Data)
+			if err != nil {
+				fmt.Print("Catastrophic failure joining game. Disconnecting.")
+				return
+			}
 		} else if message.Event == "playerReady" {
 			playerReady(conn, game, player)
 		} else if message.Event == "moveArmies" {
@@ -126,19 +134,19 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 
 func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	var game Game
-	var player Player
+	var player *Player
 
 	fmt.Print("Creating game.\n")
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		fmt.Print("Error with data in createGame:" + err.Error())
-		return game, player
+		return &game, player, err
 	}
 	var message CreateMessage
 	err = json.Unmarshal(bytes, &message)
 	if err != nil {
 		fmt.Print("Unable to unmarshal data to CreateMessage:" + err.Error())
-		return game, player
+		return &game, player, err
 	}
 	password := message.Password
 	height := message.Height
@@ -157,14 +165,14 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	}
 	err = CreateGameTable(game.Id, height, width)
 	if err != nil {
-		return game, player
+		return &game, player, err
 	}
 	addNPCCities(game)
 	ActiveGames[game.Id] = &game
 	sendGameData(conn, player, game)
 	sendPlayerData(conn, player, game)
 	setupGrowth();
-	return game, player
+	return &game, player, nil
 }
 
 
@@ -179,8 +187,8 @@ func addNPCCities(game Game) {
 
 
 func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
-	var game Game
-	var player Player
+	var game *Game
+	var player *Player
 
 	fmt.Print("Joining game.\n")
 	bytes, err := json.Marshal(data)

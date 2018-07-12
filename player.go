@@ -11,10 +11,10 @@ type Player struct {
 	Color string
 }
 
-func createPlayer(conn *websocket.Conn) Player {
+func createPlayer(conn *websocket.Conn) *Player {
 	player := Player{
 		Id: GenerateRandomId(),
 		Conn: conn,
 	}
-	return player
+	return &player
 }
