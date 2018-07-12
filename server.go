@@ -90,7 +90,7 @@ func (e *errorString) Error() string {
 }
 
 
-var ActiveGames map[string]Game
+var ActiveGames map[string]*Game
 var db *sql.DB
 
 
@@ -100,6 +100,8 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 		fmt.Print(err)
 		return
 	}
+	var player *Player
+	var game *Game
 	// Main loop that drives entire game
 	for {
 		var message Message
@@ -110,11 +112,11 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if message.Event == "createGame" {
-			createGame(conn, message.Data)
+			game, player = createGame(conn, message.Data)
 		} else if message.Event == "joinGame" {
-			joinGame(conn, message.Data)
+			game, player = joinGame(conn, message.Data)
 		} else if message.Event == "playerReady" {
-			playerReady(conn, message.Data)
+			playerReady(conn, game, player)
 		} else if message.Event == "moveArmies" {
 			moveArmies(conn, message.Data)
 		}
@@ -122,27 +124,30 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func createGame(conn *websocket.Conn, data interface{}) {
+func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
+	var game Game
+	var player Player
+
 	fmt.Print("Creating game.\n")
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		fmt.Print("Error with data in createGame:" + err.Error())
-		return
+		return game, player
 	}
 	var message CreateMessage
 	err = json.Unmarshal(bytes, &message)
 	if err != nil {
 		fmt.Print("Unable to unmarshal data to CreateMessage:" + err.Error())
-		return
+		return game, player
 	}
 	password := message.Password
 	height := message.Height
 	width := message.Width
 
-	player := createPlayer(conn)
+	player = createPlayer(conn)
 	players := make(map[string]*Player)
 	players[player.Id] = &player
-	game := Game{
+	game = Game{
 		Id: GenerateRandomId(),
 		Password: password,
 		Players:  players,
@@ -152,12 +157,14 @@ func createGame(conn *websocket.Conn, data interface{}) {
 	}
 	err = CreateGameTable(game.Id, height, width)
 	if err != nil {
-		return
+		return game, player
 	}
 	addNPCCities(game)
-	ActiveGames[game.Id] = game
+	ActiveGames[game.Id] = &game
 	sendGameData(conn, player, game)
 	sendPlayerData(conn, player, game)
+	setupGrowth();
+	return game, player
 }
 
 
@@ -171,40 +178,43 @@ func addNPCCities(game Game) {
 }
 
 
-func joinGame(conn *websocket.Conn, data interface{}) {
+func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
+	var game Game
+	var player Player
+
 	fmt.Print("Joining game.\n")
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		fmt.Print("Error with data in joinGame:" + err.Error())
-		return
+		return game, player, err
 	}
 	var message JoinMessage
 	err = json.Unmarshal(bytes, &message)
 	if err != nil {
 		fmt.Print("Unable to unmarshal data to JoinMessage:" + err.Error())
-		return
+		return game, player, err
 	}
 
 	gameId := message.GameId
 	password := message.Password
 
-	player := createPlayer(conn)
+	player = createPlayer(conn)
 
 	game, ok := ActiveGames[gameId]
 	if !ok {
 		fmt.Print("Game not found.\n")
-		return
+		return game, player, nil // TODO: create custom error
 	}
 
 	if password != game.Password {
 		fmt.Print("Wrong password!\n")
-		return
+		return game, player, nil // TODO: create custom error
 	}
 
 	game.Players[player.Id] = &player
 	sendGameData(conn, player, game)
 	sendPlayerData(conn, player, game)
-	setupGrowth();
+	return game, player, nil
 }
 
 
@@ -260,26 +270,8 @@ func setupGrowth() {
 }
 
 
-func playerReady(conn *websocket.Conn, data interface{}) {
+func playerReady(conn *websocket.Conn, game *Game, player *Player) {
 	fmt.Print("Player ready.\n")
-	bytes, err := json.Marshal(data)
-	if err != nil {
-		fmt.Print("Error with data in playerReady:" + err.Error())
-		return
-	}
-	var message ReadyMessage
-	err = json.Unmarshal(bytes, &message)
-	if err != nil {
-		fmt.Print("Unable to unmarshal data to ReadyMessage:" + err.Error())
-		return
-	}
-	gameId := message.GameId
-	playerId := message.PlayerId
-	game, ok := ActiveGames[gameId]
-	if !ok {
-		fmt.Print("Game not found.\n")
-		return
-	}
 
 	player, ok := game.Players[playerId]
 	if !ok {
@@ -289,6 +281,8 @@ func playerReady(conn *websocket.Conn, data interface{}) {
 
 	player.Ready = true
 	if len(game.getPlayers()) == len(game.getReadyPlayers()) {
+		// TODO: mark game as started
+		game.AssignColors()
 		startGame(conn, game)
 	} else {
 		sendPlayerData(conn, *player, game)
@@ -361,7 +355,7 @@ func CreateGameTable(id string, height int, width int) error {
 	for r := 0; r < height; r++{
 		for c := 0; c < width; c++{
 			insertionStmtText += "(?, ?, ?, ?, ?, ?),"
-			vals = append(vals, r, c, false, 0, "", "")
+			vals = append(vals, r, c, false, 0, "NPC", "white")
 		}
 	}
 	

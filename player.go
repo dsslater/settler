@@ -8,6 +8,7 @@ type Player struct {
 	Id   string
 	Conn *websocket.Conn
 	Ready bool
+	Color string
 }
 
 func createPlayer(conn *websocket.Conn) Player {

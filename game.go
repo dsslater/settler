@@ -13,7 +13,9 @@ type Game struct {
 	Started  bool
 }
 
-func (g Game) getPlayers() []Player {
+const COLORS = [8]string{"red", "green", "blue", "orange", "purple", "yellow", "grey", "pink"}
+
+func (g *Game) getPlayers() []Player {
 	var players []Player
 	for _, player := range g.Players {
 		players = append(players, *player)
@@ -21,7 +23,7 @@ func (g Game) getPlayers() []Player {
 	return players
 }
 
-func (g Game) getReadyPlayers() []Player {
+func (g *Game) getReadyPlayers() []Player {
 	var players []Player
 	for _, player := range g.Players {
 		if player.Ready {
@@ -31,11 +33,11 @@ func (g Game) getReadyPlayers() []Player {
 	return players
 }
 
-func (g Game) getNumReadyPlayers() int {
+func (g *Game) getNumReadyPlayers() int {
 	return len(g.getReadyPlayers())
 }
 
-func (g Game) GetCell(index [2]int) (Cell, error) {
+func (g *Game) GetCell(index [2]int) (Cell, error) {
 	var cell Cell
 	row := index[0]
 	col := index[1]
@@ -69,7 +71,7 @@ func (g Game) GetCell(index [2]int) (Cell, error) {
 	return cell, nil
 }
 
-func (g Game) GetCells() []Cell {
+func (g *Game) GetCells() []Cell {
 	var cells []Cell
 	
 	getCellsText := fmt.Sprintf("SELECT * FROM %s;", g.Id)
@@ -104,7 +106,7 @@ func (g Game) GetCells() []Cell {
 	return cells
 }
 
-func (g Game) MarkCity(index [2]int, playerId string) {
+func (g *Game) MarkCity(index [2]int, playerId string) {
 	row := index[0]
 	col := index[1]
 	markCityText := fmt.Sprintf("UPDATE %s SET city=true, owner=%s WHERE row=%d AND col=%d;", g.Id, playerId, row, col)
@@ -118,5 +120,13 @@ func (g Game) MarkCity(index [2]int, playerId string) {
 	if err != nil {
 		fmt.Print("Query failed on MarkCity call: ", err, "\n")
 		return
+	}
+}
+
+func (g *Game) AssignColors() {
+	i := 0
+	for _, player := range g.Players {
+		player.Color = COLORS[i]
+		i++
 	}
 }
