@@ -161,7 +161,7 @@ func createGame(conn *websocket.Conn, data interface{}) {
 }
 
 
-func addNPCCities(game Game) error{
+func addNPCCities(game Game) {
 	for i := 0; i < NUM_NPC_CITIES; i++ {
 		row := rand.Intn(game.Height)
 		col := rand.Intn(game.Width)
@@ -299,7 +299,7 @@ func playerReady(conn *websocket.Conn, data interface{}) {
 func startGame(conn *websocket.Conn, game Game) {
 	// add cities for each player marked as being owned by them
 	playerCities := make(map[[2]int]bool)
-	for _, player := range game.ReadyPlayers {
+	for _, player := range game.Players {
 		var row int
 		var col int
 		var index [2]int
