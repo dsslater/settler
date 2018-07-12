@@ -165,7 +165,7 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 		fmt.Print("Unable to unmarshal data to JoinMessage:" + err.Error())
 		return
 	}
-	fmt.Print("JoinMessage: ", JoinMessage)
+	fmt.Print("JoinMessage: ", message)
 	gameId := message.GameName
 	password := message.Password
 
