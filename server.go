@@ -40,7 +40,7 @@ type JoinMessage struct {
 	Password string `json:"gamePass"`
 }
 
-type JoinMessage struct {
+type ReadyMessage struct {
 	GameId   string `json:"gameId"`
 	PlayerID string `json:"playerId"`
 }
