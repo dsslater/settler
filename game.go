@@ -13,7 +13,7 @@ type Game struct {
 	Started  bool
 }
 
-const COLORS = [8]string{"red", "green", "blue", "orange", "purple", "yellow", "grey", "pink"}
+const COLORS = [...]string{"red", "green", "blue", "orange", "purple", "yellow", "grey", "pink"}
 
 func (g *Game) getPlayers() []Player {
 	var players []Player

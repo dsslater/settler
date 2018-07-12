@@ -154,7 +154,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 
 	player = createPlayer(conn)
 	players := make(map[string]*Player)
-	players[player.Id] = &player
+	players[player.Id] = player
 	game = Game{
 		Id: GenerateRandomId(),
 		Password: password,
@@ -169,8 +169,8 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	}
 	addNPCCities(game)
 	ActiveGames[game.Id] = &game
-	sendGameData(conn, player, game)
-	sendPlayerData(conn, player, game)
+	sendGameData(conn, *player, game)
+	sendPlayerData(conn, *player, game)
 	setupGrowth();
 	return &game, player, nil
 }
@@ -220,8 +220,8 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	}
 
 	game.Players[player.Id] = &player
-	sendGameData(conn, player, game)
-	sendPlayerData(conn, player, game)
+	sendGameData(conn, *player, *game)
+	sendPlayerData(conn, *player, *game)
 	return game, player, nil
 }
 
