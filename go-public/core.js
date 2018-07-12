@@ -101,7 +101,7 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
         }
       }
       
-      $scope.game.gameIds = data.gameIds;
+      $scope.game.gameId = data.gameId;
       $scope.player.id = data.id;
       $scope.game.players = [$scope.player.id];
       $scope.player.gameReady = true;
