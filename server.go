@@ -36,8 +36,13 @@ type CreateMessage struct {
 
 
 type JoinMessage struct {
-	GameId string `json:"gameId"`
+	GameId   string `json:"gameId"`
 	Password string `json:"gamePass"`
+}
+
+type JoinMessage struct {
+	GameId   string `json:"gameId"`
+	PlayerID string `json:"playerId"`
 }
 
 
@@ -107,7 +112,7 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 			createGame(conn, message.Data)
 		} else if message.Event == "joinGame" {
 			joinGame(conn, message.Data)
-		} else if message.Event == "iAmReady" {
+		} else if message.Event == "playerReady" {
 			playerReady(conn, message.Data)
 		} else if message.Event == "moveArmies" {
 			moveArmies(conn, message.Data)
@@ -165,7 +170,7 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 		fmt.Print("Unable to unmarshal data to JoinMessage:" + err.Error())
 		return
 	}
-	fmt.Print("JoinMessage: ", message)
+
 	gameId := message.GameId
 	password := message.Password
 
@@ -173,13 +178,12 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 	// TODO: not currently working
 	game, ok := ActiveGames[gameId]
 	if !ok {
-		fmt.Print("Game not found.")
-		fmt.Print("Active Games: ", ActiveGames)
+		fmt.Print("Game not found.\n")
 		return
 	}
 
 	if password != game.Password {
-		fmt.Print("Wrong password!")
+		fmt.Print("Wrong password!\n")
 		return
 	}
 
@@ -239,7 +243,19 @@ func setupGrowth() {
 
 
 func playerReady(conn *websocket.Conn, data interface{}) {
-	// TODO
+	fmt.Print("Player ready.\n")
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		fmt.Print("Error with data in playerReady:" + err.Error())
+		return
+	}
+	var message ReadyMessage
+	err = json.Unmarshal(bytes, &message)
+	if err != nil {
+		fmt.Print("Unable to unmarshal data to ReadyMessage:" + err.Error())
+		return
+	}
+	fmt.Print(message)
 }
 
 

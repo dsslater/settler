@@ -35,7 +35,7 @@ app.controller('waitForReadyController', function($scope, socket) {
       alert("There must be at least two players to play.");
     } else {
       $scope.player.ready = true;
-      socket.emit('iAmReady', {
+      socket.emit('playerReady', {
         gameId: $scope.game.id,
         playerId: $scope.player.id
       });
