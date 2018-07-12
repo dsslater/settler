@@ -154,7 +154,7 @@ func createGame(conn *websocket.Conn, data interface{}) {
 	if err != nil {
 		return
 	}
-	err = addNPCCities(game)
+	addNPCCities(game)
 	ActiveGames[game.Id] = game
 	sendGameData(conn, player, game)
 	sendPlayerData(conn, player, game)
