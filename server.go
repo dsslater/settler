@@ -267,8 +267,17 @@ func playerReady(conn *websocket.Conn, data interface{}) {
 		fmt.Print("Game not found.\n")
 		return
 	}
-	player := game.Players[playerId]
+
+	player, ok := game.Players[playerId]
+	if !ok {
+		fmt.Print("Player not found.\n")
+		return
+	}
+
+	fmt.Print(player, "\n")
+
 	player.Ready = true
+	fmt.Print(player, "\n")
 	sendPlayerData(conn, player, game)
 }
 
