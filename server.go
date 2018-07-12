@@ -42,7 +42,7 @@ type JoinMessage struct {
 
 type ReadyMessage struct {
 	GameId   string `json:"gameId"`
-	PlayerID string `json:"playerId"`
+	PlayerId string `json:"playerId"`
 }
 
 
@@ -153,6 +153,7 @@ func createGame(conn *websocket.Conn, data interface{}) {
 		return
 	}
 	ActiveGames[game.Id] = game
+	sendGameData(conn, player, game)
 	sendPlayerData(conn, player, game)
 }
 
@@ -175,7 +176,7 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 	password := message.Password
 
 	player := createPlayer(conn)
-	// TODO: not currently working
+
 	game, ok := ActiveGames[gameId]
 	if !ok {
 		fmt.Print("Game not found.\n")
@@ -188,11 +189,13 @@ func joinGame(conn *websocket.Conn, data interface{}) {
 	}
 
 	game.Players[player.Id] = player
+	sendGameData(conn, player, game)
 	sendPlayerData(conn, player, game)
+	setupGrowth();
 }
 
 
-func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
+func sendGameData(conn *websocket.Conn, player Player, game Game) {
 	gameInformation := GameInformation{
 		GameId: game.Id,
 		Id: player.Id,
@@ -202,14 +205,16 @@ func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
 	};
 
 	emit(conn, "gameReady", gameInformation);
+}
 
+
+func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
 	playerInformation := PlayerInformation{
 		Players: game.getPlayers(),
 		ReadyPlayers: game.getReadyPlayers(),
 	};
 
 	emitToGame(game, "playerUpdate", playerInformation);
-	setupGrowth();
 }
 
 
@@ -255,7 +260,16 @@ func playerReady(conn *websocket.Conn, data interface{}) {
 		fmt.Print("Unable to unmarshal data to ReadyMessage:" + err.Error())
 		return
 	}
-	fmt.Print(message)
+	gameId := message.GameId
+	playerId := message.playerId
+	game, ok := ActiveGames[gameId]
+	if !ok {
+		fmt.Print("Game not found.\n")
+		return
+	}
+	player := game.Players[playerId]
+	player.Ready = true
+	sendPlayerData(conn, player, game)
 }
 
 
