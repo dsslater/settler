@@ -114,7 +114,7 @@ func (g Game) MarkCity(index [2]int, playerId string) {
 		return
 	}
 	defer markCityStmt.Close()
-	_, err := markCityStmt.Exec()
+	_, err = markCityStmt.Exec()
 	if err != nil {
 		fmt.Print("Query failed on MarkCity call: ", err, "\n")
 		return

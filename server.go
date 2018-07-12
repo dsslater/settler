@@ -162,7 +162,7 @@ func createGame(conn *websocket.Conn, data interface{}) {
 
 
 func addNPCCities(game Game) error{
-	for var i := 0; i < NUM_NPC_CITIES; i++ {
+	for i := 0; i < NUM_NPC_CITIES; i++ {
 		row := rand.Intn(game.Height)
 		col := rand.Intn(game.Width)
 		index := [2]int{row, col}
