@@ -255,7 +255,7 @@ func (g *Game) AddArmies(player *Player, targetRow int, targetCol int, amount in
 
 func (g *Game) Move(player *Player, beginRow int, beginCol int, endRow int, endCol int, targetRow int, targetCol int) {
 	// Check that the player has exclusive control
-	checkControlText := fmt.Sprintf("SELECT UNIQUE(owner) FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.Id)
+	checkControlText := fmt.Sprintf("SELECT DISTINCT owner FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.Id)
 	checkControlStmt, err := db.Prepare(checkControlText)
 	if err != nil {
 		fmt.Print("Preparing CheckControl statement failed: ", err, "\n")
