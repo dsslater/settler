@@ -212,8 +212,13 @@ func (g *Game) GrowCities() ([]Cell, error) {
 func (g *Game) SaveCell(cell Cell) {
 	fmt.Print("Saving Cell\n")
 	saveCellText := fmt.Sprintf("UPDATE %s SET owner = ?, color = ?, amount = ? WHERE row = ? AND col = ?;", g.Id)
+	saveCellStmt, err := db.Prepare(saveCellText)
+	if err != nil {
+		fmt.Print("Preparing saveCellStmt statement failed: ", err, "\n")
+	}
+	defer saveCellStmt.Close()
 
-	_, err := db.Exec(saveCellText, cell.Owner, cell.Color, cell.Amount, cell.Row, cell.Col)
+	_, err = saveCellStmt.Exec(cell.Owner, cell.Color, cell.Amount, cell.Row, cell.Col)
 	if err != nil {
 		fmt.Print("Exec failed on saveCell call: ", err, "\n")
 		return
@@ -352,4 +357,38 @@ func (g *Game) MoveHorizontal(player *Player, row int, begin int, end int, targe
 
 func (g *Game) MoveVertical(player *Player, col int, begin int, end int, target int) {
 	g.Move(player, begin, col, end, col, target, col)
+}
+
+func (g *Game) getEffectedCells(startRow int, startCol int, endRowl int, endCol int) []Cell {
+	var cells []Cell
+	getEffectedText := fmt.Sprintf("SELECT * FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.Id)
+	getEffectedStmt, err := db.Prepare(getEffectedText)
+	if err != nil {
+		fmt.Print("Preparing CheckControl statement failed: ", err, "\n")
+		return cells
+	}
+	defer getEffectedStmt.Close()
+
+	rows, err := getEffectedStmt.Query(beginRow, endRow, beginCol, endCol)
+	if err != nil {
+		fmt.Print("Query failed on getEffectedStmt call: ", err, "\n")
+		return cells
+	}
+	defer rows.Close()
+
+	if err = rows.Err(); err != nil {
+		fmt.Print("Rows had an error on getEffectedStmt call: ", err, "\n")
+		return cells
+	}
+
+	for rows.Next() {
+		var cell Cell
+		err := rows.Scan(&cell.Row, &cell.Col, &cell.City, &cell.Amount, &cell.Owner, &cell.Color)
+		if err != nil {
+			fmt.Print("SQL scan failed for getEffectedStmt: ", err, "\n")
+			return cells
+		}
+		cells := append(cells, cell)
+	}
+	return cells
 }
