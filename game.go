@@ -191,18 +191,19 @@ func (g *Game) GrowAll() ([]Cell, error) {
 
 
 func (g *Game) GrowCities() ([]Cell, error) {
+	var cells []Cell
 	growCitiesText := fmt.Sprintf("UPDATE %s SET amount = amount + 1 WHERE owner != 'NPC' AND city = true;", g.Id)
 	growCitiesStmt, err  := db.Prepare(growCitiesText)
 	if err != nil {
 		fmt.Print("Preparing GrowAll statement failed: ", err, "\n")
-		return
+		return cells, err
 	}
 	defer growCitiesStmt.Close()
 
 	_, err = growCitiesStmt.Exec()
 	if err != nil {
 		fmt.Print("Exec failed on growAllStmt call: ", err, "\n")
-		return
+		return cells, err
 	}
 
 	changedCellsText := fmt.Sprintf("SELECT * FROM %s WHERE owner != 'NPC' AND city = true;", g.Id)
