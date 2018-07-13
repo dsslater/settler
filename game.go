@@ -213,7 +213,7 @@ func (g *Game) SaveCell(cell Cell) {
 	fmt.Print("Saving Cell\n")
 	saveCellText := fmt.Sprintf("UPDATE %s SET owner = ?, color = ?, amount = ? WHERE row = ? AND col = ?;", g.Id)
 
-	_, err = db.Exec(saveCellText, cell.Owner, cell.Color, cell.Amount, cell.Row, cell.Col)
+	_, err := db.Exec(saveCellText, cell.Owner, cell.Color, cell.Amount, cell.Row, cell.Col)
 	if err != nil {
 		fmt.Print("Exec failed on saveCell call: ", err, "\n")
 		return
