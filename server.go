@@ -138,20 +138,20 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 
 
 func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
-	var game Game
+	var game *Game
 	var player *Player
 
 	fmt.Print("Creating game.\n")
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		fmt.Print("Error with data in createGame:" + err.Error())
-		return &game, player, err
+		return game, player, err
 	}
 	var message CreateMessage
 	err = json.Unmarshal(bytes, &message)
 	if err != nil {
 		fmt.Print("Unable to unmarshal data to CreateMessage:" + err.Error())
-		return &game, player, err
+		return game, player, err
 	}
 	password := message.Password
 	height := message.Height
@@ -160,7 +160,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	player = createPlayer(conn)
 	players := make(map[string]*Player)
 	players[player.Id] = player
-	game = Game{
+	game = &Game{
 		Id: GenerateRandomId(),
 		Password: password,
 		Players:  players,
@@ -170,14 +170,14 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	}
 	err = CreateGameTable(game.Id, height, width)
 	if err != nil {
-		return &game, player, err
+		return game, player, err
 	}
 	addNPCCities(game)
-	ActiveGames[game.Id] = &game
-	sendGameData(conn, *player, game)
-	sendPlayerData(conn, &game)
+	ActiveGames[game.Id] = game
+	sendGameData(conn, player, game)
+	sendPlayerData(conn, game)
 	setupGrowth();
-	return &game, player, nil
+	return game, player, nil
 }
 
 
@@ -226,13 +226,13 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	}
 
 	game.Players[player.Id] = player
-	sendGameData(conn, *player, *game)
+	sendGameData(conn, player, game)
 	sendPlayerData(conn, game)
 	return game, player, nil
 }
 
 
-func sendGameData(conn *websocket.Conn, player Player, game Game) {
+func sendGameData(conn *websocket.Conn, player *Player, game *Game) {
 	gameInformation := GameInformation{
 		GameId: game.Id,
 		Id: player.Id,
