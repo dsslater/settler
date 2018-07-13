@@ -136,6 +136,9 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
   });
 
   socket.on('update', function(datas){
+    if (datas == null)
+      return
+
     $scope.$apply(function(){
       datas.forEach(function(data) {
         var cell = $scope.game.board[data.row][data.col];
