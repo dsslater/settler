@@ -342,7 +342,7 @@ func sendPlayerCities(game *Game, playerCities map[[2]int]bool) {
 			fmt.Print("Failure accessing player cities cell at index: ", index, " with error: ", err, "\n")
 			return
 		}
-		cells := append(cells, cell)
+		cells = append(cells, cell)
 	}
 	emitToGame(game, "update", cells)
 }
