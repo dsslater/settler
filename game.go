@@ -388,7 +388,7 @@ func (g *Game) getEffectedCells(beginRow int, beginCol int, endRow int, endCol i
 			fmt.Print("SQL scan failed for getEffectedStmt: ", err, "\n")
 			return cells
 		}
-		cells := append(cells, cell)
+		cells = append(cells, cell)
 	}
 	return cells
 }
