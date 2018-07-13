@@ -183,7 +183,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 }
 
 
-func addNPCCities(game Game) {
+func addNPCCities(game *Game) {
 	for i := 0; i < NUM_NPC_CITIES; i++ {
 		row := rand.Intn(game.Height)
 		col := rand.Intn(game.Width)
@@ -284,13 +284,13 @@ func emit(conn *websocket.Conn, event string, data interface{}) {
 func setupGrowth(game *Game) {
 	go func () {
 		last := time.Now()
-		cycle := 0
+		cycle := 1
 		for {
 			start := time.Now()
 			if game.Finished {
 				break
 			}
-			if cycle % CITY_GROWTH_RATIO {
+			if cycle % CITY_GROWTH_RATIO == 0 {
 				game.GrowAll()
 			} else {
 				game.GrowCities()
