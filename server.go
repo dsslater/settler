@@ -125,6 +125,8 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 			delete(game.Players, player.Id)
 			if len(game.Players) == 0 {
 				game.Finished = true
+			} else if !game.Started{
+				sendPlayerData(conn, game)
 			}
 			return
 		}
