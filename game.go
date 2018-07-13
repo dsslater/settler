@@ -256,6 +256,7 @@ func (g *Game) AddArmies(player *Player, targetRow int, targetCol int, amount in
 
 
 func (g *Game) Move(player *Player, beginRow int, beginCol int, endRow int, endCol int, targetRow int, targetCol int) {
+	fmt.Print("player: ", player, "    beginRow: ", beginRow, "    beginCol: ", beginCol, "    endRow: ", endRow, "    endCol: ", endCol, "    targetRow: ", targetRow, "    targetCol: ", targetCol)
 	// Check that the player has exclusive control
 	fmt.Print("CheckControl\n")
 	checkControlText := fmt.Sprintf("SELECT DISTINCT owner FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.Id)
