@@ -110,15 +110,14 @@ func (g *Game) GetCells() []Cell {
 func (g *Game) MarkCity(index [2]int, playerId string) {
 	row := index[0]
 	col := index[1]
-	markCityText := fmt.Sprintf("UPDATE %s SET city= true, owner= %s WHERE row=%d AND col=%d;", g.Id, playerId, row, col)
-	fmt.Print("markCityText:", markCityText)
-	markCityStmt, err := db.Prepare(markCityText)
+
+	markCityStmt, err := db.Prepare("UPDATE ? SET city= ?, owner= ? WHERE row=? AND col=?;")
 	if err != nil {
 		fmt.Print("Preparing MarkCity statement failed: ", err, "\n")
 		return
 	}
 	defer markCityStmt.Close()
-	_, err = markCityStmt.Exec()
+	_, err = markCityStmt.Exec(g.Id, true, playerId, row, col)
 	if err != nil {
 		fmt.Print("Query failed on MarkCity call: ", err, "\n")
 		return
