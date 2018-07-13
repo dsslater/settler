@@ -1,0 +1,47 @@
+<md-dialog>
+    <form ng-cloak>
+        <md-toolbar name="gameForm">
+            <div class="md-toolbar-tools">
+                <h2>
+                    <span ng-if="dialog.create">
+                        Create 
+                    </span>
+                    <span ng-if="!dialog.create">
+                        Join 
+                    </span>
+                    Game
+                </h2>
+                <span flex></span>
+            </div>
+        </md-toolbar>
+
+        <md-dialog-content>
+            <div class="md-dialog-content">
+                <md-input-container>
+                    <label>Game password</label>
+                    <input name="password" ng-model="player.gamePass">
+                </md-input-container>
+                <br>
+
+                <md-radio-group ng-if="dialog.create" ng-model="game.size">
+
+                    <md-radio-button value="20x20">Normal (20x20)</md-radio-button>
+                    <md-radio-button value="25x25">Large (25x25)</md-radio-button>
+                    <md-radio-button value="30x30">Extra Large (30x30)</md-radio-button>
+
+                </md-radio-group>
+
+                
+                
+            </div>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button md-autofocus class="md-raised" ng-click="gameAction();closeDialog()">
+                <span ng-if="dialog.create">CREATE </span>
+                <span ng-if="!dialog.create">JOIN </span>
+                GAME
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

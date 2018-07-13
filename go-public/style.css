@@ -1,0 +1,185 @@
+html {
+  overflow-y:scroll;
+}
+
+body {
+  padding-top:50px;
+}
+
+md-radio-group, md-input-container{
+  display: inline-block;
+  text-align: left;
+}
+
+md-dialog-content {
+  padding-left: 25%;
+  padding-right: 25%;
+}
+
+md-dialog {
+  width: 50%;
+}
+
+md-input-container {
+  width: 100%;
+}
+
+.frontBoxes {
+  width: 80%;
+  margin-left: 10%;
+}
+
+.square {
+  width: 80%;
+  padding-top: 80%;
+  margin-left: 10%;
+  position: relative;
+}
+
+.board {
+  border: 2px solid black;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+td {
+  border: 2px solid #000000;
+  position: relative;
+  text-align: center;
+  vertical-align: middle;
+}
+
+td:after {
+  content: '';
+  display: block;
+  margin-top: 100%;
+}
+
+td .content {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.cellWrapper {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.invisible {
+  display: none;
+}
+
+.cell {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 25%;
+  bottom: 0;
+  right: 0;
+  font-weight: bold;
+}
+
+.frontText {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 40%;
+  bottom: 0;
+  right: 0;
+  font-weight: bold;
+  font-size: x-large;
+}
+
+.frontBox {
+  background-color: lightgray;
+}
+
+.frontBox:hover {
+  background-color: darkgray;
+}
+
+button {
+    background-color: #eee;
+    border: none;
+    color: black;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 12px;
+    margin-top: 5%
+}
+
+input {
+  width: 80%;
+  margin-bottom: 5%
+}
+
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.city {
+  /* Factory by Creative Stall from the Noun Project */
+  background-image: url("./city.png");
+  background-size: contain;
+  color: gray;
+}
+
+.white {
+  background-color: white;
+}
+
+.red {
+  background-color: red;
+}
+
+.green {
+  background-color: green;
+}
+
+.blue {
+  background-color: #4169E1;
+}
+
+.orange {
+  background-color: orange;
+}
+
+.purple {
+  background-color: #DDA0DD;
+}
+
+.yellow {
+  background-color: #FFD700;
+}
+
+.grey {
+  background-color: grey;
+}
+
+.pink {
+  background-color: pink;
+}
+
+.black {
+  background-color: black;
+  font-size: small;
+}

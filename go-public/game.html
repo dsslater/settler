@@ -1,0 +1,27 @@
+<div class="square unselectable" ng-mouseleave="clearMoveArmies()">
+  <table class="board">
+    <tr ng-repeat="i in game.board track by $index") ng-init='row = $index'>
+      <td ng-repeat="j in game.board[row] track by $index" 
+          ng-init="cell = game.board[row][$index]" 
+          >
+        <div
+          class="{{cell.color}} cellWrapper" 
+          ng-class="cell.city==true ? 'city' : ''" 
+          ng-mousedown="mouseDown(row, $index)"
+          ng-mouseup="moveArmies(row, $index)"
+          ng-if="!fogOfWar(row, $index)"
+          >
+          <span class="cell unselectable">{{cell.amount}}
+          </span>
+        </div>
+        <div
+          ng-if="fogOfWar(row, $index)"
+          class="black cellWrapper"
+          >
+          <span class="cell unselectable"></span>
+        </div>
+
+      </td>
+    </tr>
+  </table>
+</div>

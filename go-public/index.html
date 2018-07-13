@@ -1,0 +1,48 @@
+<!-- index.html -->
+<!doctype html>
+
+<html ng-app="Settler">
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" href="./city.png">
+    <!-- Optimize mobile viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Settler v2</title>
+    
+    <!-- load bootstrap -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+
+    <!-- load jquery -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <!-- load angular -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <!-- START Angular Material Library -->
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.css">
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-animate.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-aria.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-messages.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.js"></script>
+    <!-- END Angular Material Library -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.7/angular-resource.min.js"></script>
+
+    <script src="core.js"></script>
+    <script src="startDialog.js"></script>
+    <script src="waitForReady.js"></script>
+    <script src="game.js"></script>
+    <script src="endDialog.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+</head>
+<body ng-controller="mainController">
+    <div class="container">
+        <div class="jumbotron text-center unselectable">
+            <h1>Settler v2</h1>
+            <p>by David Slater</p>
+        </div>
+        <div ng-include="'start.html'" ng-if="!player.gameReady"></div>
+        <div ng-include="'waitForReady.html'" ng-controller="waitForReadyController" ng-if="player.gameReady && !player.gameStart"></div>
+        <div ng-include="'game.html'" ng-controller="gameController" ng-if="game.gameStart"></div>
+    </div>
+</body>
+</html>
