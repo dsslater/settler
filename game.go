@@ -256,7 +256,6 @@ func (g *Game) AddArmies(player *Player, targetRow int, targetCol int, amount in
 
 
 func (g *Game) Move(player *Player, beginRow int, beginCol int, endRow int, endCol int, targetRow int, targetCol int) {
-	fmt.Print("MOVE: player: ", player.Id, "    beginRow: ", beginRow, "    beginCol: ", beginCol, "    endRow: ", endRow, "    endCol: ", endCol, "    targetRow: ", targetRow, "    targetCol: ", targetCol, "\n")
 	// Check that the player has exclusive control
 	fmt.Print("CheckControl\n")
 	checkControlText := fmt.Sprintf("SELECT DISTINCT owner FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.Id)
@@ -324,7 +323,7 @@ func (g *Game) Move(player *Player, beginRow int, beginCol int, endRow int, endC
 			return
 		}
 	}
-	// We ned to subtract the 1 army we leave on each cell
+	// We need to subtract the 1 army we leave on each cell
 	costOfOnes := endRow + endCol - beginRow - beginCol + 1
 	armiesToMoveToTarget := sum - costOfOnes
 	if armiesToMoveToTarget < 1 {
