@@ -328,8 +328,7 @@ func startGame(conn *websocket.Conn, game *Game) {
 		game.MarkCity(index, player.Id)
 	}
 	sendPlayerData(conn, game)
-    if (game.started) 
-      messageRoom(game.room, 'gameStart');
+    emitToGame(game, "startGame", nil)
 }
 
 
