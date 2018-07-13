@@ -147,11 +147,11 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	height := message.Height
 	width := message.Width
 
-	player = createPlayer(conn)
+	player = CreatePlayer(conn)
 	players := make(map[string]*Player)
 	players[player.ID] = player
 	game = &Game{
-		Id: GenerateRandomID(),
+		ID: GenerateRandomID(),
 		Password: password,
 		Players:  players,
 		Height:   height,
@@ -201,7 +201,7 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	gameID := message.GameID
 	password := message.Password
 
-	player = createPlayer(conn)
+	player = CreatePlayer(conn)
 
 	game, ok := activeGames[gameID]
 	if !ok {
@@ -228,7 +228,7 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 func sendGameData(conn *websocket.Conn, player *Player, game *Game) {
 	gameInformation := gameInformation{
 		GameID: game.ID,
-		Id: player.ID,
+		ID: player.ID,
 		Dimensions: [2]int{game.Height, game.Width},
 		Points: game.GetCells(),
 		NumPlayers: 0,
@@ -240,8 +240,8 @@ func sendGameData(conn *websocket.Conn, player *Player, game *Game) {
 
 func sendPlayerData(conn *websocket.Conn, game *Game) {
 	playerInformation := playerInformation{
-		Players: game.getPlayers(),
-		ReadyPlayers: game.getReadyPlayers(),
+		Players: game.GetPlayers(),
+		ReadyPlayers: game.GetReadyPlayers(),
 	};
 
 	emitToGame(game, "playerUpdate", playerInformation);
@@ -265,7 +265,7 @@ func emit(conn *websocket.Conn, event string, data interface{}) {
 		return
 	}
 	// fmt.Print("Emitting: [", event, "] ", string(bytes), "\n")
-	if err := conn.Writemessage(websocket.Textmessage, bytes); err != nil {
+	if err := conn.WriteMessage(websocket.TextMessage, bytes); err != nil {
 		fmt.Print("Failure writing to websocket in emit: ", err)
 		return
 	}
