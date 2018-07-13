@@ -212,13 +212,8 @@ func (g *Game) GrowCities() ([]Cell, error) {
 func (g *Game) SaveCell(cell Cell) {
 	fmt.Print("Saving Cell\n")
 	saveCellText := fmt.Sprintf("UPDATE %s SET owner = ?, color = ?, amount = ? WHERE row = ? AND col = ?;", g.Id)
-	saveCellStmt, err := db.Prepare(saveCellText)
-	if err != nil {
-		fmt.Print("Preparing saveCellStmt statement failed: ", err, "\n")
-	}
-	defer saveCellStmt.Close()
 
-	_, err = saveCellStmt.Exec(cell.Owner, cell.Color, cell.Amount, cell.Row, cell.Col)
+	_, err = db.Exec(saveCellText, cell.Owner, cell.Color, cell.Amount, cell.Row, cell.Col)
 	if err != nil {
 		fmt.Print("Exec failed on saveCell call: ", err, "\n")
 		return
