@@ -211,7 +211,7 @@ func (g *Game) GrowCities() ([]Cell, error) {
 
 func (g *Game) SaveCell(cell Cell) {
 	saveCellText := fmt.Sprintf("UPDATE %s SET owner = ?, color = ?, amount = ? WHERE row = ? AND col = ?;", g.Id)
-	saveCellStmt, err db.Prepare(saveCellText)
+	saveCellStmt, err := db.Prepare(saveCellText)
 	if err != nil {
 		fmt.Print("Preparing saveCellStmt statement failed: ", err, "\n")
 	}
@@ -300,7 +300,7 @@ func (g *Game) Move(player *Player, beginRow int, beginCol int, endRow int, endC
 	}
 	defer sumMoveStmt.Close()
 
-	rows, err := sumMoveStmt.Query(beginRow, endRow, beginCol, endCol)
+	rows, err = sumMoveStmt.Query(beginRow, endRow, beginCol, endCol)
 	if err != nil {
 		fmt.Print("Query failed on sumMoveStmt call: ", err, "\n")
 		return
