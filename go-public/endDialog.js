@@ -3,6 +3,7 @@ app.controller('endDialogController', function($scope, socket, game, player) {
   $scope.player = player;
 
   $scope.reload = function() {
+    window.location = window.location.substring(0, window.location.indexOf('?'))
     window.location.reload();
   }
 
