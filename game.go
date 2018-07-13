@@ -11,6 +11,7 @@ type Game struct {
 	Height   int
 	Width    int
 	Started  bool
+	Finished bool
 }
 
 var COLORS = [...]string{"red", "green", "blue", "orange", "purple", "yellow", "grey", "pink"}
@@ -111,7 +112,6 @@ func (g *Game) MarkCity(index [2]int, playerId string, amount int, color string)
 	row := index[0]
 	col := index[1]
 	markCityText := fmt.Sprintf("UPDATE %s SET city= ?, owner= ?, amount= ?, color= ? WHERE row=? AND col=?;", g.Id)
-	fmt.Print("markCityText:", markCityText)
 	markCityStmt, err := db.Prepare(markCityText)
 	if err != nil {
 		fmt.Print("Preparing MarkCity statement failed: ", err, "\n")
@@ -120,7 +120,7 @@ func (g *Game) MarkCity(index [2]int, playerId string, amount int, color string)
 	defer markCityStmt.Close()
 	_, err = markCityStmt.Exec(true, playerId, amount, color, row, col)
 	if err != nil {
-		fmt.Print("Query failed on MarkCity call: ", err, "\n")
+		fmt.Print("Exec failed on MarkCity call: ", err, "\n")
 		return
 	}
 }
@@ -130,5 +130,39 @@ func (g *Game) AssignColors() {
 	for _, player := range g.Players {
 		player.Color = COLORS[i]
 		i++
+	}
+}
+
+
+func (g *Game) GrowAll() {
+	growAllText := fmt.Sprintf("UPDATE %s SET amount = amount + 1 WHERE owner != 'NPC';", g.Id)
+	growAllStmt, err  := db.Prepare(growAllText)
+	if err != nil {
+		fmt.Print("Preparing GrowAll statement failed: ", err, "\n")
+		return
+	}
+	defer growAllStmt.Close()
+
+	_, err = growAllStmt.Exec()
+	if err != nil {
+		fmt.Print("Exec failed on growAllStmt call: ", err, "\n")
+		return
+	}
+}
+
+
+func (g *Game) GrowCities() {
+	growCitiesText := fmt.Sprintf("UPDATE %s SET amount = amount + 1 WHERE owner != 'NPC' AND city = true;", g.Id)
+	growCitiesStmt, err  := db.Prepare(growCitiesText)
+	if err != nil {
+		fmt.Print("Preparing GrowAll statement failed: ", err, "\n")
+		return
+	}
+	defer growCitiesStmt.Close()
+
+	_, err = growCitiesStmt.Exec()
+	if err != nil {
+		fmt.Print("Exec failed on growAllStmt call: ", err, "\n")
+		return
 	}
 }

@@ -22,6 +22,8 @@ const (
 	NUM_NPC_CITIES = 10
 	CITY_AMOUNT_BASE = 40
 	CITY_AMOUNT_RANGE = 10
+	CITY_GROWTH_RATIO = 5
+	GROWTH_CYCLE_TIME = 4 * time.Millisecond
 )
 
 
@@ -176,7 +178,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	ActiveGames[game.Id] = game
 	sendGameData(conn, player, game)
 	sendPlayerData(conn, game)
-	setupGrowth();
+	setupGrowth(game);
 	return game, player, nil
 }
 
@@ -279,8 +281,24 @@ func emit(conn *websocket.Conn, event string, data interface{}) {
 }
 
 
-func setupGrowth() {
-	// TODO manage a go routine for growth
+func setupGrowth(game *Game) {
+	go func () {
+		last := time.Now()
+		cycle := 0
+		for {
+			start := time.Now()
+			if game.Finished {
+				break
+			}
+			if cycle % CITY_GROWTH_RATIO {
+				game.GrowAll()
+			} else {
+				game.GrowCities()
+			}
+			time.Sleep(GROWTH_CYCLE_TIME - time.Since(start))
+			cycle++
+		}
+	}()
 }
 
 
