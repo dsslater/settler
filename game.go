@@ -42,14 +42,14 @@ func (g *Game) GetCell(index [2]int) (Cell, error) {
 	var cell Cell
 	row := index[0]
 	col := index[1]
-	getCellText := fmt.Sprintf("SELECT * FROM %s WHERE row=%d AND col=%d;", g.Id, row, col)
+	getCellText := fmt.Sprintf("SELECT * FROM %s WHERE row= ? AND col= ?;", g.Id)
 	getCellStmt, err := db.Prepare(getCellText)
 	if err != nil {
 		fmt.Print("Preparing getCell statement failed: ", err, "\n")
 		return cell, err
 	}
 	defer getCellStmt.Close()
-	rows, err := getCellStmt.Query()
+	rows, err := getCellStmt.Query(row, col)
 	if err != nil {
 		fmt.Print("Query failed on getCellStmt call: ", err, "\n")
 		return cell, err

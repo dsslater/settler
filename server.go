@@ -1,5 +1,6 @@
 package main
 
+
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"time"
 )
+
 
 const (
 	SAFE_BYTES = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
@@ -40,6 +42,7 @@ type JoinMessage struct {
 	GameId   string `json:"gameId"`
 	Password string `json:"gamePass"`
 }
+
 
 type ReadyMessage struct {
 	GameId   string `json:"gameId"`
@@ -170,7 +173,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	addNPCCities(game)
 	ActiveGames[game.Id] = &game
 	sendGameData(conn, *player, game)
-	sendPlayerData(conn, *player, game)
+	sendPlayerData(conn, game)
 	setupGrowth();
 	return &game, player, nil
 }
@@ -221,7 +224,7 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 
 	game.Players[player.Id] = player
 	sendGameData(conn, *player, *game)
-	sendPlayerData(conn, *player, *game)
+	sendPlayerData(conn, *game)
 	return game, player, nil
 }
 
@@ -239,7 +242,7 @@ func sendGameData(conn *websocket.Conn, player Player, game Game) {
 }
 
 
-func sendPlayerData(conn *websocket.Conn, player Player, game Game) {
+func sendPlayerData(conn *websocket.Conn, game Game) {
 	playerInformation := PlayerInformation{
 		Players: game.getPlayers(),
 		ReadyPlayers: game.getReadyPlayers(),
@@ -293,7 +296,7 @@ func playerReady(conn *websocket.Conn, game *Game, player *Player) {
 		game.AssignColors()
 		startGame(conn, game)
 	} else {
-		sendPlayerData(conn, *player, *game)
+		sendPlayerData(conn, *game)
 	}
 }
 
@@ -324,8 +327,9 @@ func startGame(conn *websocket.Conn, game *Game) {
 		playerCities[index] = true
 		game.MarkCity(index, player.Id)
 	}
-	// send game update
-	// send gameStart
+	sendPlayerData(conn, game)
+    if (game.started) 
+      messageRoom(game.room, 'gameStart');
 }
 
 
@@ -383,6 +387,7 @@ func CreateGameTable(id string, height int, width int) error {
 
 	return nil
 }
+
 
 func deleteOldTables() {
 	deleteAllTablesText := "SELECT concat('DROP TABLE IF EXISTS `', table_name, '`;') FROM information_schema.tables WHERE table_schema = 'settler';"
