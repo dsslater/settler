@@ -111,6 +111,7 @@ func (g *Game) MarkCity(index [2]int, playerId string) {
 	row := index[0]
 	col := index[1]
 	markCityText := fmt.Sprintf("UPDATE %s SET city= true, owner= %s WHERE row=%d AND col=%d;", g.Id, playerId, row, col)
+	fmt.Print("markCityText:", markCityText)
 	markCityStmt, err := db.Prepare(markCityText)
 	if err != nil {
 		fmt.Print("Preparing MarkCity statement failed: ", err, "\n")
