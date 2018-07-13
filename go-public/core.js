@@ -6,7 +6,6 @@ app.factory('socket', [function() {
   socket.onmessage = function (evt) { 
     message = JSON.parse(evt.data);
     event = message['event']
-    console.log("Event: " + event);
     if (event in events) {
       handler = events[event]
       data = message['data'];
@@ -18,7 +17,6 @@ app.factory('socket', [function() {
 
   return {
     on: function(eventName, callback){
-      console.log("Registered event for: " + eventName);
       if (callback == null) {
         delete events[eventName];
       } else {

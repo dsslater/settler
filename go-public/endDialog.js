@@ -4,10 +4,7 @@ app.controller('endDialogController', function($scope, socket, game, player) {
 
   $scope.reload = function() {
     newUrl = window.location.href.substring(0, window.location.href.indexOf('?'));
-    console.log("Reloading: " + newUrl);
     window.location = newUrl;
-    // window.location.reload();
-    console.log("URL: " + window.location.href)
   }
 
   $scope.win = function() {
