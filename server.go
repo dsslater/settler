@@ -283,7 +283,6 @@ func emit(conn *websocket.Conn, event string, data interface{}) {
 
 func setupGrowth(game *Game) {
 	go func () {
-		last := time.Now()
 		cycle := 1
 		for {
 			start := time.Now()
