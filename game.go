@@ -359,7 +359,7 @@ func (g *Game) MoveVertical(player *Player, col int, begin int, end int, target 
 	g.Move(player, begin, col, end, col, target, col)
 }
 
-func (g *Game) getEffectedCells(startRow int, startCol int, endRowl int, endCol int) []Cell {
+func (g *Game) getEffectedCells(beginRow int, beginCol int, endRow int, endCol int) []Cell {
 	var cells []Cell
 	getEffectedText := fmt.Sprintf("SELECT * FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.Id)
 	getEffectedStmt, err := db.Prepare(getEffectedText)

@@ -438,7 +438,7 @@ func moveArmies(conn *websocket.Conn, game *Game, player *Player, data interface
 		}
 		game.MoveVertical(player, startCol, begin, end, target)
 	}
-	emitToGame(game, 'update', g.getEffectedCells(startRow, startCol, endRowl, endCol))
+	emitToGame(game, "update", game.getEffectedCells(startRow, startCol, endRow, endCol))
 }
 
 
