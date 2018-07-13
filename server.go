@@ -173,7 +173,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	addNPCCities(game)
 	ActiveGames[game.Id] = &game
 	sendGameData(conn, *player, game)
-	sendPlayerData(conn, game)
+	sendPlayerData(conn, &game)
 	setupGrowth();
 	return &game, player, nil
 }
@@ -224,7 +224,7 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 
 	game.Players[player.Id] = player
 	sendGameData(conn, *player, *game)
-	sendPlayerData(conn, *game)
+	sendPlayerData(conn, game)
 	return game, player, nil
 }
 
@@ -242,7 +242,7 @@ func sendGameData(conn *websocket.Conn, player Player, game Game) {
 }
 
 
-func sendPlayerData(conn *websocket.Conn, game Game) {
+func sendPlayerData(conn *websocket.Conn, game *Game) {
 	playerInformation := PlayerInformation{
 		Players: game.getPlayers(),
 		ReadyPlayers: game.getReadyPlayers(),
@@ -252,7 +252,7 @@ func sendPlayerData(conn *websocket.Conn, game Game) {
 }
 
 
-func emitToGame(game Game, event string, data interface{}) {
+func emitToGame(game *Game, event string, data interface{}) {
 	for _, player := range game.Players {
 		emit(player.Conn, event, data)
 	}
@@ -296,7 +296,7 @@ func playerReady(conn *websocket.Conn, game *Game, player *Player) {
 		game.AssignColors()
 		startGame(conn, game)
 	} else {
-		sendPlayerData(conn, *game)
+		sendPlayerData(conn, game)
 	}
 }
 
