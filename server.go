@@ -219,7 +219,7 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 		return game, player, nil // TODO: create custom error
 	}
 
-	game.Players[player.Id] = &player
+	game.Players[player.Id] = player
 	sendGameData(conn, *player, *game)
 	sendPlayerData(conn, *player, *game)
 	return game, player, nil
@@ -281,7 +281,7 @@ func setupGrowth() {
 func playerReady(conn *websocket.Conn, game *Game, player *Player) {
 	fmt.Print("Player ready.\n")
 
-	player, ok := game.Players[playerId]
+	player, ok := game.Players[player.Id]
 	if !ok {
 		fmt.Print("Player not found.\n")
 		return
@@ -293,12 +293,12 @@ func playerReady(conn *websocket.Conn, game *Game, player *Player) {
 		game.AssignColors()
 		startGame(conn, game)
 	} else {
-		sendPlayerData(conn, *player, game)
+		sendPlayerData(conn, *player, *game)
 	}
 }
 
 
-func startGame(conn *websocket.Conn, game Game) {
+func startGame(conn *websocket.Conn, game *Game) {
 	// add cities for each player marked as being owned by them
 	playerCities := make(map[[2]int]bool)
 	for _, player := range game.Players {
@@ -424,7 +424,7 @@ func deleteOldTables() {
 
 
 func main() {
-	ActiveGames = make(map[string]Game)
+	ActiveGames = make(map[string]*Game)
 	rand.Seed(time.Now().UnixNano())
 	// Connect to SQL DB
 	data, err := ioutil.ReadFile("./database_login")
