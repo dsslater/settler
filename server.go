@@ -488,6 +488,20 @@ func CreateGameTable(id string, height int, width int) error {
 		return err
 	}
 
+	indexText := fmt.Sprintf("CREATE INDEX row_col ON %s (row, col);", id)
+	indexStmt, err := db.Prepare(indexText)
+	if err != nil {
+		fmt.Print("Failed to build index error: ", err, "\n")
+		return err
+	}
+	defer indexStmt.Close()
+
+	_, err = indexStmt.Exec()
+	if err != nil {
+		fmt.Print("Executing statement failed for indexing in CreateGameTable: ", err)
+		return err
+	}
+
 	return nil
 }
 
