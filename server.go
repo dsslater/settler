@@ -7,7 +7,6 @@ import (
 	"github.com/gorilla/websocket"
 	"encoding/json"
 	"fmt"
-	"math"
 	"math/rand"
 	"net/http"
 	"io/ioutil"
