@@ -3,7 +3,7 @@ app.controller('waitForReadyController', function($scope, socket) {
     event.returnValue = 'Are you sure that you want to leave the game?';
     return event.returnValue;
   }
-  $scope.link = "http://35.202.116.91?gameId=" + $scope.game.id;
+  $scope.link = "http://settler.davidslater.io?gameId=" + $scope.game.id;
   
   socket.on('playerUpdate', function(data) {
     $scope.$apply(function(){
