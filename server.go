@@ -20,6 +20,8 @@ const (
 	CONNECT_MESSAGE = 0
 	READY_MESSAGE = 1
 	NUM_NPC_CITIES = 10
+	CITY_AMOUNT_BASE = 40
+	CITY_AMOUNT_RANGE = 10
 )
 
 
@@ -184,7 +186,8 @@ func addNPCCities(game Game) {
 		row := rand.Intn(game.Height)
 		col := rand.Intn(game.Width)
 		index := [2]int{row, col}
-		game.MarkCity(index, "")
+		amount := CITY_AMOUNT_BASE + rand.Intn(CITY_AMOUNT_RANGE)
+		game.MarkCity(index, "", amount)
 	}
 }
 
@@ -326,7 +329,7 @@ func startGame(conn *websocket.Conn, game *Game) {
 			}
 		}
 		playerCities[index] = true
-		game.MarkCity(index, player.Id)
+		game.MarkCity(index, player.Id, 1)
 	}
 	sendPlayerCities(game, playerCities)
 	sendPlayerData(conn, game)
