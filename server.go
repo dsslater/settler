@@ -328,8 +328,23 @@ func startGame(conn *websocket.Conn, game *Game) {
 		playerCities[index] = true
 		game.MarkCity(index, player.Id)
 	}
+	sendPlayerCities(game, playerCities)
 	sendPlayerData(conn, game)
     emitToGame(game, "startGame", nil)
+}
+
+
+func sendPlayerCities(game *Game, playerCities map[[2]int]bool) {
+	var cells []Cell
+	for index, _ := range playerCities {
+		cell, err := game.GetCell(index)
+		if err != nil {
+			fmt.Print("Failure accessing player cities cell at index: ", index, " with error: ", err, "\n")
+			return
+		}
+		cells := append(cells, cell)
+	}
+	emitToGame(game, "update", cells)
 }
 
 
