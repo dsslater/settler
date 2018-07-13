@@ -187,7 +187,7 @@ func addNPCCities(game Game) {
 		col := rand.Intn(game.Width)
 		index := [2]int{row, col}
 		amount := CITY_AMOUNT_BASE + rand.Intn(CITY_AMOUNT_RANGE)
-		game.MarkCity(index, "", amount)
+		game.MarkCity(index, "", amount, "white")
 	}
 }
 
@@ -329,7 +329,7 @@ func startGame(conn *websocket.Conn, game *Game) {
 			}
 		}
 		playerCities[index] = true
-		game.MarkCity(index, player.Id, 1)
+		game.MarkCity(index, player.Id, 1, player.Color)
 	}
 	sendPlayerCities(game, playerCities)
 	sendPlayerData(conn, game)
