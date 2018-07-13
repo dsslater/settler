@@ -320,8 +320,8 @@ func (g *Game) Move(player *Player, beginRow int, beginCol int, endRow int, endC
 		}
 	}
 	// We ned to subtract the 1 army we leave on each cell
-	costOfOnes = endRow + endCol - beginRow - beginCol + 1
-	armiesToMoveToTarget = sum - costOfOnes
+	costOfOnes := endRow + endCol - beginRow - beginCol + 1
+	armiesToMoveToTarget := sum - costOfOnes
 	if armiesToMoveToTarget < 1 {
 		return
 	}
