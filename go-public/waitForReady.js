@@ -12,7 +12,7 @@ app.controller('waitForReadyController', function($scope, socket) {
     });
   });
 
-  socket.on('gameStart', function(data) {
+  socket.on('startGame', function(data) {
     $scope.$apply(function(){
       $scope.player.armies = 0;
       $scope.game.gameStart = true;
