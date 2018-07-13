@@ -4,16 +4,20 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+
+// Player maintains all user specfic data.
 type Player struct {
-	Id   string
+	ID   string
 	Conn *websocket.Conn
 	Ready bool
 	Color string
 }
 
-func createPlayer(conn *websocket.Conn) *Player {
+
+// CreatePlayer returns a pointer to a newly created Player object.
+func CreatePlayer(conn *websocket.Conn) *Player {
 	player := Player{
-		Id: GenerateRandomId(),
+		ID: GenerateRandomId(),
 		Conn: conn,
 	}
 	return &player

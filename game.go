@@ -74,7 +74,7 @@ func (g *Game) GetCell(row int, col int) (Cell, error) {
 }
 
 
-/* GetCells return a slice of all Cells. */
+// GetCells return a slice of all Cells.
 func (g *Game) GetCells() []Cell {
 	var cells []Cell
 	
@@ -247,7 +247,7 @@ func (g *Game) addArmies(player *Player, targetRow int, targetCol int, amount in
 		return
 	}
 
-	if (cell.Owner == player.Id) {
+	if (cell.Owner == player.ID) {
       // If player already owns this point add the amount to the point.
       cell.Amount += amount;
     } else {
@@ -260,7 +260,7 @@ func (g *Game) addArmies(player *Player, targetRow int, targetCol int, amount in
 		} else {
 			cell.Amount = remainder * -1;
 			cell.Color = player.Color;
-			cell.Owner = player.Id;
+			cell.Owner = player.ID;
 		}
     }
     g.saveCell(cell)
@@ -303,7 +303,7 @@ func (g *Game) move(player *Player, beginRow int, beginCol int, endRow int, endC
 			fmt.Print("SQL scan failed for checkControlStmt: ", err, "\n")
 			return
 		}
-		if owner != player.Id {
+		if owner != player.ID {
 			return
 		}
 		numPlayers++
