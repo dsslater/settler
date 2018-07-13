@@ -121,8 +121,11 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 	for {
 		var message Message
 		if err := conn.ReadJSON(&message); err != nil {
-			// TODO: implement disconnect code
-			fmt.Print("Error reading JSON from socket: ", err, "\n")
+			fmt.Print("Disconnecting ", player.Id, "\n")
+			delete(game.Players, player.Id)
+			if len(game.Players) == 0 {
+				game.Finished = true
+			}
 			return
 		}
 
@@ -293,7 +296,6 @@ func setupGrowth(game *Game) {
 	go func () {
 		cycle := 1
 		for {
-			fmt.Print("Growth Cycle!")
 			start := time.Now()
 			if game.Finished {
 				break
