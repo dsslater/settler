@@ -424,9 +424,9 @@ func moveArmies(conn *websocket.Conn, game *Game, player *Player, data interface
 		}
 		game.MoveHorizontal(player, startRow, begin, end, target)
 		if startCol < endCol {
-			effectedCells := game.getEffectedCells(startRow, startCol, startRow, endCol)
+			effectedCells = game.getEffectedCells(startRow, startCol, startRow, endCol)
 		} else {
-			effectedCells := game.getEffectedCells(startRow, endCol, startRow, startCol)
+			effectedCells = game.getEffectedCells(startRow, endCol, startRow, startCol)
 		}
 	} else {
 		// vertical drag
@@ -444,9 +444,9 @@ func moveArmies(conn *websocket.Conn, game *Game, player *Player, data interface
 		}
 		game.MoveVertical(player, startCol, begin, end, target)
 		if startRow < endRow {
-			effectedCells := game.getEffectedCells(startRow, startCol, endRow, startCol)
+			effectedCells = game.getEffectedCells(startRow, startCol, endRow, startCol)
 		} else {
-			effectedCells := game.getEffectedCells(endRow, startCol, startRow, startCol)
+			effectedCells = game.getEffectedCells(endRow, startCol, startRow, startCol)
 		}
 	}
 	emitToGame(game, "update", effectedCells)
