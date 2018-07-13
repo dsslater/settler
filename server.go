@@ -54,6 +54,14 @@ type ReadyMessage struct {
 }
 
 
+type MoveArmiesMessage struct {
+	StartRow int `json:"start_row"`
+	EndRow   int `json:"end_row"`
+	StartCol int `json:"start_col"`
+	EndCol   int `json:"end_col"`
+}
+
+
 type Message struct {
 	Event string	  `json:"event"`
 	Data  interface{} `json:"data"`
@@ -133,7 +141,7 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 		} else if message.Event == "playerReady" {
 			playerReady(conn, game, player)
 		} else if message.Event == "moveArmies" {
-			moveArmies(conn, message.Data)
+			moveArmies(conn, game, player, message.Data)
 		}
 	}
 }
@@ -342,7 +350,9 @@ func startGame(conn *websocket.Conn, game *Game) {
 			index = [2]int{row, col}
 			_, ok := playerCities[index]
 			if !ok {
-				cell, err := game.GetCell(index)
+				cellRow := index[0]
+				cellCol := index[1]
+				cell, err := game.GetCell(cellRow, cellCol)
 				if err != nil {
 					fmt.Print("Failure accessing cell at index: ", index, " with error: ", err, "\n")
 					return
@@ -364,7 +374,9 @@ func startGame(conn *websocket.Conn, game *Game) {
 func sendPlayerCities(game *Game, playerCities map[[2]int]bool) {
 	var cells []Cell
 	for index, _ := range playerCities {
-		cell, err := game.GetCell(index)
+		row := index[0]
+		col := index[1]
+		cell, err := game.GetCell(row, col)
 		if err != nil {
 			fmt.Print("Failure accessing player cities cell at index: ", index, " with error: ", err, "\n")
 			return
@@ -375,8 +387,57 @@ func sendPlayerCities(game *Game, playerCities map[[2]int]bool) {
 }
 
 
-func moveArmies(conn *websocket.Conn, data interface{}) {
-	// TODO
+func moveArmies(conn *websocket.Conn, game *Game, player *Player, data interface{}) {
+	fmt.Print("Move armies.\n")
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		fmt.Print("Error with data in moveArmies:" + err.Error())
+		return
+	}
+
+	var message MoveArmiesMessage
+	err = json.Unmarshal(bytes, &message)
+	if err != nil {
+		fmt.Print("Unable to unmarshal data to JoinMessage:" + err.Error())
+		return
+	}
+
+	startRow := message.StartRow
+	endRow := message.EndRow
+	startCol := message.StartCol
+	endCol := message.EndCol
+
+	if startRow == endRow {
+		// horizontal drag
+		target := endCol
+		var begin int
+		var end int
+		if endCol > startCol {
+			// right drag
+			begin = startCol
+			end = endCol - 1
+		} else {
+			// left drag
+			begin = endCol + 1
+			end = startCol
+		}
+		game.MoveHorizontal(player, startRow, begin, end, target)
+	} else {
+		// vertical drag
+		target := endRow
+		var begin int
+		var end int
+		if endRow > startRow {
+			// down drag
+			begin = startRow
+			end = endRow - 1
+		} else {
+			// up drag
+			begin = endRow + 1
+			end = startRow
+		}
+		game.MoveVertical(player, startCol, begin, end, target)
+	}
 }
 
 
