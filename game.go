@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-/* Controls all logic for a single game. */
+/* Game controls all logic for a single game. */
 type Game struct {
 	ID       string
 	Password string
@@ -18,7 +18,7 @@ type Game struct {
 var colors = [...]string{"red", "green", "blue", "orange", "purple", "yellow", "grey", "pink"}
 
 
-/* Returns a slice of all players. */
+/* GetPlayers returns a slice of all players. */
 func (g *Game) GetPlayers() []Player {
 	var players []Player
 	for _, player := range g.Players {
@@ -28,7 +28,7 @@ func (g *Game) GetPlayers() []Player {
 }
 
 
-/* Returns a slice of all players who have marked themselves as ready. */
+/* GetReadyPlayers returns a slice of all players who have marked themselves as ready. */
 func (g *Game) GetReadyPlayers() []Player {
 	var players []Player
 	for _, player := range g.Players {
@@ -40,7 +40,7 @@ func (g *Game) GetReadyPlayers() []Player {
 }
 
 
-/* Returns a Cell object populated with the db information for the row, col provided. */
+/* GetCell returns a Cell object populated with the db information for the row, col provided. */
 func (g *Game) GetCell(row int, col int) (Cell, error) {
 	var cell Cell
 	getCellText := fmt.Sprintf("SELECT * FROM %s WHERE row= ? AND col= ?;", g.ID)
@@ -74,7 +74,7 @@ func (g *Game) GetCell(row int, col int) (Cell, error) {
 }
 
 
-/* Return a slice of all Cells. */
+/* GetCells return a slice of all Cells. */
 func (g *Game) GetCells() []Cell {
 	var cells []Cell
 	
@@ -111,7 +111,7 @@ func (g *Game) GetCells() []Cell {
 }
 
 
-/* Mark a specified row and col as a city and assign its owner, amount, cand color. */
+/* MarkCity marks a specified row and col as a city and assign its owner, amount, cand color. */
 func (g *Game) MarkCity(index [2]int, playerId string, amount int, color string) {
 	row := index[0]
 	col := index[1]
@@ -130,7 +130,7 @@ func (g *Game) MarkCity(index [2]int, playerId string, amount int, color string)
 }
 
 
-/* Once a game has started, this function is called to assign all players their respective colors. */
+/* AssignColors is called to assign all players their respective colors. */
 func (g *Game) AssignColors() {
 	i := 0
 	for _, player := range g.Players {
@@ -140,7 +140,7 @@ func (g *Game) AssignColors() {
 }
 
 
-/* Provided with a query for the type of growth, returns the cells effected. */
+/* getGrowthChangedCells, provided with a query for the type of growth, returns a slice of the cells effected. */
 func getGrowthChangedCells(changedCellsQuery string) ([]Cell, error) {
 	var cells []Cell
 
@@ -176,7 +176,7 @@ func getGrowthChangedCells(changedCellsQuery string) ([]Cell, error) {
 }
 
 
-/* Increments all player owned cells and returns a slice of the effected cells.c */
+/* GrowAll increments all player owned cells and returns a slice of the effected cells.c */
 func (g *Game) GrowAll() ([]Cell, error) {
 	var cells []Cell
 	growAllText := fmt.Sprintf("UPDATE %s SET amount = amount + 1 WHERE owner != 'NPC';", g.ID)
@@ -198,7 +198,7 @@ func (g *Game) GrowAll() ([]Cell, error) {
 }
 
 
-/* Increments all player owned cities amount by one and returns a slice of the effected cells. */
+/* GrowCities increments all player owned cities amount by one and returns a slice of the effected cells. */
 func (g *Game) GrowCities() ([]Cell, error) {
 	var cells []Cell
 	growCitiesText := fmt.Sprintf("UPDATE %s SET amount = amount + 1 WHERE owner != 'NPC' AND city = true;", g.ID)
@@ -220,7 +220,7 @@ func (g *Game) GrowCities() ([]Cell, error) {
 }
 
 
-/* Provided with a cell, saves the information to the db. */
+/* saveCell, provided with a cell, saves the information to the db. */
 func (g *Game) saveCell(cell Cell) {
 	fmt.Print("Saving Cell\n")
 	saveCellText := fmt.Sprintf("UPDATE %s SET owner = ?, color = ?, amount = ? WHERE row = ? AND col = ?;", g.ID)
@@ -238,7 +238,7 @@ func (g *Game) saveCell(cell Cell) {
 }
 
 
-/* Handles army placement on either a cell owned by the player or an opponent. */
+/* addArmies handles army placement on either a cell owned by the player or an opponent. */
 func (g *Game) addArmies(player *Player, targetRow int, targetCol int, amount int) {
 	fmt.Print("Adding armies\n")
 	cell, err := g.GetCell(targetRow, targetCol)
@@ -267,7 +267,7 @@ func (g *Game) addArmies(player *Player, targetRow int, targetCol int, amount in
 }
 
 
-/* Handles a players army movement. Checks that the player owns all cells in the move, ensures 
+/* move handles a players army movement. Checks that the player owns all cells in the move, ensures 
    that there are sufficient armies to move, sets all cells in the move to value 1 and finally
    takes all the armies moved and calls addArmies on the target. */
 func (g *Game) move(player *Player, beginRow int, beginCol int, endRow int, endCol int, targetRow int, targetCol int) {
@@ -365,18 +365,18 @@ func (g *Game) move(player *Player, beginRow int, beginCol int, endRow int, endC
 }
 
 
-/* Handles horizontal moves. */
+/* MoveHorizontal handles horizontal moves. */
 func (g *Game) MoveHorizontal(player *Player, row int, begin int, end int, target int) {
 	g.move(player, row, begin, row, end, row, target)
 }
 
 
-/* Handles vertical moves. */
+/* MoveVertical handles vertical moves. */
 func (g *Game) MoveVertical(player *Player, col int, begin int, end int, target int) {
 	g.move(player, begin, col, end, col, target, col)
 }
 
-/* Returns a slice of cells effected by a move. */
+/* GetEffectedCells returns a slice of cells effected by a move. */
 func (g *Game) GetEffectedCells(beginRow int, beginCol int, endRow int, endCol int) []Cell {
 	var cells []Cell
 	getEffectedText := fmt.Sprintf("SELECT * FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.ID)
