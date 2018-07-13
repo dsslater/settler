@@ -34,14 +34,8 @@ type createmessage struct {
 
 
 type joinmessage struct {
-	GameId   string `json:"gameId"`
+	GameID   string `json:"gameId"`
 	Password string `json:"gamePass"`
-}
-
-
-type readymessage struct {
-	GameId   string `json:"gameId"`
-	PlayerId string `json:"playerId"`
 }
 
 
@@ -60,8 +54,8 @@ type message struct {
 
 
 type gameInformation struct {
-	GameId   string `json:"gameId"`
-	Id         string `json:"id"`
+	GameID   string `json:"gameId"`
+	ID         string `json:"id"`
 	Dimensions [2]int `json:"dimensions"`
 	Points     []Cell  `json:"points"`
 	NumPlayers int    `json:"numPlayers"`
@@ -86,7 +80,7 @@ var upgrader = websocket.Upgrader{
 }
 
 
-var ActiveGames map[string]*Game
+var activeGames map[string]*Game
 var db *sql.DB
 
 // GameLoop establishes a websocket connection and then handles all messages from the client.
@@ -157,7 +151,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	players := make(map[string]*Player)
 	players[player.ID] = player
 	game = &Game{
-		Id: GenerateRandomId(),
+		Id: GenerateRandomID(),
 		Password: password,
 		Players:  players,
 		Height:   height,
@@ -169,7 +163,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 		return game, player, err
 	}
 	addNPCCities(game)
-	ActiveGames[game.ID] = game
+	activeGames[game.ID] = game
 	sendGameData(conn, player, game)
 	sendPlayerData(conn, game)
 	return game, player, nil
@@ -204,12 +198,12 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 		return game, player, err
 	}
 
-	gameId := message.GameId
+	gameID := message.GameID
 	password := message.Password
 
 	player = createPlayer(conn)
 
-	game, ok := ActiveGames[gameId]
+	game, ok := activeGames[gameID]
 	if !ok {
 		fmt.Print("Game not found.\n")
 		return game, player, errors.New("Game not found")
@@ -233,7 +227,7 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 
 func sendGameData(conn *websocket.Conn, player *Player, game *Game) {
 	gameInformation := gameInformation{
-		GameId: game.ID,
+		GameID: game.ID,
 		Id: player.ID,
 		Dimensions: [2]int{game.Height, game.Width},
 		Points: game.GetCells(),
@@ -361,7 +355,7 @@ func startGame(conn *websocket.Conn, game *Game) {
 
 func sendPlayerCities(game *Game, playerCities map[[2]int]bool) {
 	var cells []Cell
-	for index, _ := range playerCities {
+	for index := range playerCities {
 		row := index[0]
 		col := index[1]
 		cell, err := game.GetCell(row, col)
@@ -441,8 +435,8 @@ func moveArmies(conn *websocket.Conn, game *Game, player *Player, data interface
 }
 
 
-// GenerateRandomId creates a string of random characters to be used as a unique id
-func GenerateRandomId() string {
+// GenerateRandomID creates a string of random characters to be used as a unique id
+func GenerateRandomID() string {
 	b := make([]byte, 32)
 	for i := range b {
 	b[i] = safeBytes[rand.Intn(len(safeBytes))]
@@ -547,7 +541,7 @@ func deleteOldTables() {
 
 
 func main() {
-	ActiveGames = make(map[string]*Game)
+	activeGames = make(map[string]*Game)
 	rand.Seed(time.Now().UnixNano())
 	// Connect to SQL DB
 	data, err := ioutil.ReadFile("./database_login")

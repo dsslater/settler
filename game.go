@@ -112,7 +112,7 @@ func (g *Game) GetCells() []Cell {
 
 
 // MarkCity marks a specified row and col as a city and assign its owner, amount, cand color.
-func (g *Game) MarkCity(index [2]int, playerId string, amount int, color string) {
+func (g *Game) MarkCity(index [2]int, playerID string, amount int, color string) {
 	row := index[0]
 	col := index[1]
 	markCityText := fmt.Sprintf("UPDATE %s SET city= ?, owner= ?, amount= ?, color= ? WHERE row=? AND col=?;", g.ID)
@@ -122,7 +122,7 @@ func (g *Game) MarkCity(index [2]int, playerId string, amount int, color string)
 		return
 	}
 	defer markCityStmt.Close()
-	_, err = markCityStmt.Exec(true, playerId, amount, color, row, col)
+	_, err = markCityStmt.Exec(true, playerID, amount, color, row, col)
 	if err != nil {
 		fmt.Print("Exec failed on MarkCity call: ", err, "\n")
 		return

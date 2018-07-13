@@ -17,7 +17,7 @@ type Player struct {
 // CreatePlayer returns a pointer to a newly created Player object.
 func CreatePlayer(conn *websocket.Conn) *Player {
 	player := Player{
-		ID: GenerateRandomId(),
+		ID: GenerateRandomID(),
 		Conn: conn,
 	}
 	return &player
