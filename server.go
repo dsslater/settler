@@ -23,7 +23,7 @@ const (
 	CITY_AMOUNT_BASE = 40
 	CITY_AMOUNT_RANGE = 10
 	CITY_GROWTH_RATIO = 5
-	GROWTH_CYCLE_TIME = 4 * time.Millisecond
+	GROWTH_CYCLE_TIME = 4.0
 )
 
 
@@ -189,7 +189,7 @@ func addNPCCities(game *Game) {
 		col := rand.Intn(game.Width)
 		index := [2]int{row, col}
 		amount := CITY_AMOUNT_BASE + rand.Intn(CITY_AMOUNT_RANGE)
-		game.MarkCity(index, "", amount, "white")
+		game.MarkCity(index, "NPC", amount, "white")
 	}
 }
 
