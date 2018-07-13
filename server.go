@@ -281,7 +281,7 @@ func emit(conn *websocket.Conn, event string, data interface{}) {
 		fmt.Print("Failure the Marshal in emit: ", err)
 		return
 	}
-	fmt.Print("Emitting: [", event, "] ", string(bytes), "\n")
+	// fmt.Print("Emitting: [", event, "] ", string(bytes), "\n")
 	if err := conn.WriteMessage(websocket.TextMessage, bytes); err != nil {
 		fmt.Print("Failure writing to websocket in emit: ", err)
 		return
