@@ -134,7 +134,7 @@ func (g *Game) MarkCity(index [2]int, playerID string, amount int, color string)
 func (g *Game) AssignColors() {
 	i := 0
 	for _, player := range g.Players {
-		player.Color = COLORS[i]
+		player.Color = colors[i]
 		i++
 	}
 }
@@ -361,7 +361,7 @@ func (g *Game) move(player *Player, beginRow int, beginCol int, endRow int, endC
 	}
 
 	// Apply to target
-	g.AddArmies(player, targetRow, targetCol, armiesToMoveToTarget)
+	g.addArmies(player, targetRow, targetCol, armiesToMoveToTarget)
 }
 
 

@@ -308,7 +308,7 @@ func playerReady(conn *websocket.Conn, game *Game, player *Player) {
 	}
 
 	player.Ready = true
-	if len(game.getPlayers()) == len(game.getReadyPlayers()) {
+	if len(game.GetPlayers()) == len(game.GetReadyPlayers()) {
 		game.Started = true
 		game.AssignColors()
 		startGame(conn, game)
