@@ -4,8 +4,9 @@ import (
 	"fmt"
 )
 
+/* Controls all logic for a single game. */
 type Game struct {
-	Id       string
+	ID       string
 	Password string
 	Players  map[string]*Player
 	Height   int
@@ -14,10 +15,11 @@ type Game struct {
 	Finished bool
 }
 
-var COLORS = [...]string{"red", "green", "blue", "orange", "purple", "yellow", "grey", "pink"}
+var colors = [...]string{"red", "green", "blue", "orange", "purple", "yellow", "grey", "pink"}
 
 
-func (g *Game) getPlayers() []Player {
+/* Returns a slice of all players. */
+func (g *Game) GetPlayers() []Player {
 	var players []Player
 	for _, player := range g.Players {
 		players = append(players, *player)
@@ -25,7 +27,9 @@ func (g *Game) getPlayers() []Player {
 	return players
 }
 
-func (g *Game) getReadyPlayers() []Player {
+
+/* Returns a slice of all players who have marked themselves as ready. */
+func (g *Game) GetReadyPlayers() []Player {
 	var players []Player
 	for _, player := range g.Players {
 		if player.Ready {
@@ -35,13 +39,11 @@ func (g *Game) getReadyPlayers() []Player {
 	return players
 }
 
-func (g *Game) getNumReadyPlayers() int {
-	return len(g.getReadyPlayers())
-}
 
+/* Returns a Cell object populated with the db information for the row, col provided. */
 func (g *Game) GetCell(row int, col int) (Cell, error) {
 	var cell Cell
-	getCellText := fmt.Sprintf("SELECT * FROM %s WHERE row= ? AND col= ?;", g.Id)
+	getCellText := fmt.Sprintf("SELECT * FROM %s WHERE row= ? AND col= ?;", g.ID)
 	getCellStmt, err := db.Prepare(getCellText)
 	if err != nil {
 		fmt.Print("Preparing getCell statement failed: ", err, "\n")
@@ -71,10 +73,12 @@ func (g *Game) GetCell(row int, col int) (Cell, error) {
 	return cell, nil
 }
 
+
+/* Return a slice of all Cells. */
 func (g *Game) GetCells() []Cell {
 	var cells []Cell
 	
-	getCellsText := fmt.Sprintf("SELECT * FROM %s;", g.Id)
+	getCellsText := fmt.Sprintf("SELECT * FROM %s;", g.ID)
 	getCellsStmt, err := db.Prepare(getCellsText)
 	if err != nil {
 		fmt.Print("Preparing getCells statement failed: ", err, "\n")
@@ -106,10 +110,12 @@ func (g *Game) GetCells() []Cell {
 	return cells
 }
 
+
+/* Mark a specified row and col as a city and assign its owner, amount, cand color. */
 func (g *Game) MarkCity(index [2]int, playerId string, amount int, color string) {
 	row := index[0]
 	col := index[1]
-	markCityText := fmt.Sprintf("UPDATE %s SET city= ?, owner= ?, amount= ?, color= ? WHERE row=? AND col=?;", g.Id)
+	markCityText := fmt.Sprintf("UPDATE %s SET city= ?, owner= ?, amount= ?, color= ? WHERE row=? AND col=?;", g.ID)
 	markCityStmt, err := db.Prepare(markCityText)
 	if err != nil {
 		fmt.Print("Preparing MarkCity statement failed: ", err, "\n")
@@ -123,6 +129,8 @@ func (g *Game) MarkCity(index [2]int, playerId string, amount int, color string)
 	}
 }
 
+
+/* Once a game has started, this function is called to assign all players their respective colors. */
 func (g *Game) AssignColors() {
 	i := 0
 	for _, player := range g.Players {
@@ -132,25 +140,26 @@ func (g *Game) AssignColors() {
 }
 
 
-func getChangedCells(changedCellsText string) ([]Cell, error) {
+/* Provided with a query for the type of growth, returns the cells effected. */
+func getGrowthChangedCells(changedCellsQuery string) ([]Cell, error) {
 	var cells []Cell
 
-	changedCellsStmt, err := db.Prepare(changedCellsText)
+	changedCellsStmt, err := db.Prepare(changedCellsQuery)
 	if err != nil {
-		fmt.Print("Preparing getChangedCells statement failed: ", err, "\n")
+		fmt.Print("Preparing getGrowthChangedCells statement failed: ", err, "\n")
 		return cells, err
 	}
 	defer changedCellsStmt.Close()
 
 	rows, err := changedCellsStmt.Query()
 	if err != nil {
-		fmt.Print("Query failed on changedCellsStmt call: ", err, "\n")
+		fmt.Print("Query failed on getGrowthChangedCellsStmt call: ", err, "\n")
 		return cells, err
 	}
 	defer rows.Close()
 
 	if err = rows.Err(); err != nil {
-		fmt.Print("Rows had an error on getChangedCells call: ", err, "\n")
+		fmt.Print("Rows had an error on getGrowthChangedCells call: ", err, "\n")
 		return cells, err
 	}
 
@@ -158,7 +167,7 @@ func getChangedCells(changedCellsText string) ([]Cell, error) {
 		var cell Cell
 		err := rows.Scan(&cell.Row, &cell.Col, &cell.City, &cell.Amount, &cell.Owner, &cell.Color)
 		if err != nil {
-			fmt.Print("SQL scan failed for getChangedCells: ", err, "\n")
+			fmt.Print("SQL scan failed for getGrowthChangedCells: ", err, "\n")
 			return cells, err
 		}
 		cells = append(cells, cell)
@@ -167,9 +176,10 @@ func getChangedCells(changedCellsText string) ([]Cell, error) {
 }
 
 
+/* Increments all player owned cells and returns a slice of the effected cells.c */
 func (g *Game) GrowAll() ([]Cell, error) {
 	var cells []Cell
-	growAllText := fmt.Sprintf("UPDATE %s SET amount = amount + 1 WHERE owner != 'NPC';", g.Id)
+	growAllText := fmt.Sprintf("UPDATE %s SET amount = amount + 1 WHERE owner != 'NPC';", g.ID)
 	growAllStmt, err  := db.Prepare(growAllText)
 	if err != nil {
 		fmt.Print("Preparing GrowAll statement failed: ", err, "\n")
@@ -183,14 +193,15 @@ func (g *Game) GrowAll() ([]Cell, error) {
 		return cells, err
 	}
 
-	changedCellsText := fmt.Sprintf("SELECT * FROM %s WHERE owner != 'NPC';", g.Id)
-	return getChangedCells(changedCellsText)
+	changedCellsText := fmt.Sprintf("SELECT * FROM %s WHERE owner != 'NPC';", g.ID)
+	return getGrowthChangedCells(changedCellsText)
 }
 
 
+/* Increments all player owned cities amount by one and returns a slice of the effected cells. */
 func (g *Game) GrowCities() ([]Cell, error) {
 	var cells []Cell
-	growCitiesText := fmt.Sprintf("UPDATE %s SET amount = amount + 1 WHERE owner != 'NPC' AND city = true;", g.Id)
+	growCitiesText := fmt.Sprintf("UPDATE %s SET amount = amount + 1 WHERE owner != 'NPC' AND city = true;", g.ID)
 	growCitiesStmt, err  := db.Prepare(growCitiesText)
 	if err != nil {
 		fmt.Print("Preparing GrowAll statement failed: ", err, "\n")
@@ -204,14 +215,15 @@ func (g *Game) GrowCities() ([]Cell, error) {
 		return cells, err
 	}
 
-	changedCellsText := fmt.Sprintf("SELECT * FROM %s WHERE owner != 'NPC' AND city = true;", g.Id)
-	return getChangedCells(changedCellsText)
+	changedCellsText := fmt.Sprintf("SELECT * FROM %s WHERE owner != 'NPC' AND city = true;", g.ID)
+	return getGrowthChangedCells(changedCellsText)
 }
 
 
-func (g *Game) SaveCell(cell Cell) {
+/* Provided with a cell, saves the information to the db. */
+func (g *Game) saveCell(cell Cell) {
 	fmt.Print("Saving Cell\n")
-	saveCellText := fmt.Sprintf("UPDATE %s SET owner = ?, color = ?, amount = ? WHERE row = ? AND col = ?;", g.Id)
+	saveCellText := fmt.Sprintf("UPDATE %s SET owner = ?, color = ?, amount = ? WHERE row = ? AND col = ?;", g.ID)
 	saveCellStmt, err := db.Prepare(saveCellText)
 	if err != nil {
 		fmt.Print("Preparing saveCellStmt statement failed: ", err, "\n")
@@ -226,8 +238,8 @@ func (g *Game) SaveCell(cell Cell) {
 }
 
 
-
-func (g *Game) AddArmies(player *Player, targetRow int, targetCol int, amount int) {
+/* Handles army placement on either a cell owned by the player or an opponent. */
+func (g *Game) addArmies(player *Player, targetRow int, targetCol int, amount int) {
 	fmt.Print("Adding armies\n")
 	cell, err := g.GetCell(targetRow, targetCol)
 	if err != nil {
@@ -251,14 +263,17 @@ func (g *Game) AddArmies(player *Player, targetRow int, targetCol int, amount in
 			cell.Owner = player.Id;
 		}
     }
-    g.SaveCell(cell)
+    g.saveCell(cell)
 }
 
 
-func (g *Game) Move(player *Player, beginRow int, beginCol int, endRow int, endCol int, targetRow int, targetCol int) {
+/* Handles a players army movement. Checks that the player owns all cells in the move, ensures 
+   that there are sufficient armies to move, sets all cells in the move to value 1 and finally
+   takes all the armies moved and calls addArmies on the target. */
+func (g *Game) move(player *Player, beginRow int, beginCol int, endRow int, endCol int, targetRow int, targetCol int) {
 	// Check that the player has exclusive control
 	fmt.Print("CheckControl\n")
-	checkControlText := fmt.Sprintf("SELECT DISTINCT owner FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.Id)
+	checkControlText := fmt.Sprintf("SELECT DISTINCT owner FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.ID)
 	checkControlStmt, err := db.Prepare(checkControlText)
 	if err != nil {
 		fmt.Print("Preparing CheckControl statement failed: ", err, "\n")
@@ -296,7 +311,7 @@ func (g *Game) Move(player *Player, beginRow int, beginCol int, endRow int, endC
 
 	// Sum armies in the move
 	fmt.Print("Summing Move\n")
-	sumMoveText := fmt.Sprintf("SELECT SUM(amount) FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.Id)
+	sumMoveText := fmt.Sprintf("SELECT SUM(amount) FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.ID)
 	sumMoveStmt, err := db.Prepare(sumMoveText)
 	if err != nil {
 		fmt.Print("Preparing sumMove statement failed: ", err, "\n")
@@ -331,7 +346,7 @@ func (g *Game) Move(player *Player, beginRow int, beginCol int, endRow int, endC
 	}
 	fmt.Print("There are suffcient armies to move: ", armiesToMoveToTarget, "\n")
 	// Set all cells in the move to 1
-	setCellsToOneText := fmt.Sprintf("UPDATE %s SET amount = 1 WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.Id)
+	setCellsToOneText := fmt.Sprintf("UPDATE %s SET amount = 1 WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.ID)
 	setCellsToOneStmt, err := db.Prepare(setCellsToOneText)
 	if err != nil {
 		fmt.Print("Preparing setCellsToOne statement failed: ", err, "\n")
@@ -350,18 +365,21 @@ func (g *Game) Move(player *Player, beginRow int, beginCol int, endRow int, endC
 }
 
 
+/* Handles horizontal moves. */
 func (g *Game) MoveHorizontal(player *Player, row int, begin int, end int, target int) {
-	g.Move(player, row, begin, row, end, row, target)
+	g.move(player, row, begin, row, end, row, target)
 }
 
 
+/* Handles vertical moves. */
 func (g *Game) MoveVertical(player *Player, col int, begin int, end int, target int) {
-	g.Move(player, begin, col, end, col, target, col)
+	g.move(player, begin, col, end, col, target, col)
 }
 
-func (g *Game) getEffectedCells(beginRow int, beginCol int, endRow int, endCol int) []Cell {
+/* Returns a slice of cells effected by a move. */
+func (g *Game) GetEffectedCells(beginRow int, beginCol int, endRow int, endCol int) []Cell {
 	var cells []Cell
-	getEffectedText := fmt.Sprintf("SELECT * FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.Id)
+	getEffectedText := fmt.Sprintf("SELECT * FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.ID)
 	getEffectedStmt, err := db.Prepare(getEffectedText)
 	if err != nil {
 		fmt.Print("Preparing CheckControl statement failed: ", err, "\n")

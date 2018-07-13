@@ -1,7 +1,7 @@
 package  main
 
+/* Represents a single space on a game board. */
 type Cell struct {
-	/* Represents a single space on a game board. */
 	Row    int    `json:"row"`
 	Col    int    `json:"col"`
 	City   bool   `json:"city"`

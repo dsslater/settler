@@ -183,15 +183,14 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 		Width:    width,
 		Started:  false,
 	}
-	err = CreateGameTable(game.Id, height, width)
+	err = CreateGameTable(game.ID, height, width)
 	if err != nil {
 		return game, player, err
 	}
 	addNPCCities(game)
-	ActiveGames[game.Id] = game
+	ActiveGames[game.ID] = game
 	sendGameData(conn, player, game)
 	sendPlayerData(conn, game)
-	setupGrowth(game);
 	return game, player, nil
 }
 
@@ -253,7 +252,7 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 
 func sendGameData(conn *websocket.Conn, player *Player, game *Game) {
 	gameInformation := GameInformation{
-		GameId: game.Id,
+		GameId: game.ID,
 		Id: player.Id,
 		Dimensions: [2]int{game.Height, game.Width},
 		Points: game.GetCells(),
@@ -373,6 +372,7 @@ func startGame(conn *websocket.Conn, game *Game) {
 		playerCities[index] = true
 		game.MarkCity(index, player.Id, 1, player.Color)
 	}
+	setupGrowth(game);
 	sendPlayerCities(game, playerCities)
 	sendPlayerData(conn, game)
     emitToGame(game, "startGame", nil)
@@ -432,9 +432,9 @@ func moveArmies(conn *websocket.Conn, game *Game, player *Player, data interface
 		}
 		game.MoveHorizontal(player, startRow, begin, end, target)
 		if startCol < endCol {
-			effectedCells = game.getEffectedCells(startRow, startCol, startRow, endCol)
+			effectedCells = game.GetEffectedCells(startRow, startCol, startRow, endCol)
 		} else {
-			effectedCells = game.getEffectedCells(startRow, endCol, startRow, startCol)
+			effectedCells = game.GetEffectedCells(startRow, endCol, startRow, startCol)
 		}
 	} else {
 		// vertical drag
@@ -452,9 +452,9 @@ func moveArmies(conn *websocket.Conn, game *Game, player *Player, data interface
 		}
 		game.MoveVertical(player, startCol, begin, end, target)
 		if startRow < endRow {
-			effectedCells = game.getEffectedCells(startRow, startCol, endRow, startCol)
+			effectedCells = game.GetEffectedCells(startRow, startCol, endRow, startCol)
 		} else {
-			effectedCells = game.getEffectedCells(endRow, startCol, startRow, startCol)
+			effectedCells = game.GetEffectedCells(endRow, startCol, startRow, startCol)
 		}
 	}
 	emitToGame(game, "update", effectedCells)
