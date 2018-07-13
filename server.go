@@ -236,7 +236,7 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	}
 	if game.Started {
 		fmt.Print("Game has already started.\n")
-		return
+		return game, player, nil // TODO: create custom error
 	}
 
 	if password != game.Password {
