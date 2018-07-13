@@ -285,15 +285,22 @@ func setupGrowth(game *Game) {
 	go func () {
 		cycle := 1
 		for {
+			fmt.Print("Growth Cycle!")
 			start := time.Now()
 			if game.Finished {
 				break
 			}
+			var cells []Cell
+			var err error
 			if cycle % CITY_GROWTH_RATIO == 0 {
-				game.GrowAll()
+				cells, err = game.GrowAll()
 			} else {
-				game.GrowCities()
+				cells, err = game.GrowCities()
 			}
+			if err != nil {
+				return
+			}
+			emitToGame(game, "update", cells)
 			time.Sleep(GROWTH_CYCLE_TIME - time.Since(start))
 			cycle++
 		}

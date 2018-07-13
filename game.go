@@ -134,24 +134,63 @@ func (g *Game) AssignColors() {
 }
 
 
-func (g *Game) GrowAll() {
+func getChangedCells(changedCellsText string) ([]Cell, error) {
+	var cells []Cell
+
+	changedCellsStmt, err := db.Prepare(changedCellsText)
+	if err != nil {
+		fmt.Print("Preparing getChangedCells statement failed: ", err, "\n")
+		return cells, err
+	}
+	defer changedCellsStmt.Close()
+
+	rows, err := changedCellsStmt.Query()
+	if err != nil {
+		fmt.Print("Query failed on changedCellsStmt call: ", err, "\n")
+		return cells, err
+	}
+	defer rows.Close()
+
+	if err = rows.Err(); err != nil {
+		fmt.Print("Rows had an error on getChangedCells call: ", err, "\n")
+		return cells, err
+	}
+
+	for rows.Next() {
+		var cell Cell
+		err := rows.Scan(&cell.Row, &cell.Col, &cell.City, &cell.Amount, &cell.Owner, &cell.Color)
+		if err != nil {
+			fmt.Print("SQL scan failed for getChangedCells: ", err, "\n")
+			return cells, err
+		}
+		cells = append(cells, cell)
+	}
+	return cells, nil
+}
+
+
+func (g *Game) GrowAll() ([]Cell, error) {
+	var cells []Cell
 	growAllText := fmt.Sprintf("UPDATE %s SET amount = amount + 1 WHERE owner != 'NPC';", g.Id)
 	growAllStmt, err  := db.Prepare(growAllText)
 	if err != nil {
 		fmt.Print("Preparing GrowAll statement failed: ", err, "\n")
-		return
+		return cells, err
 	}
 	defer growAllStmt.Close()
 
 	_, err = growAllStmt.Exec()
 	if err != nil {
 		fmt.Print("Exec failed on growAllStmt call: ", err, "\n")
-		return
+		return cells, err
 	}
+
+	changedCellsText := fmt.Sprintf("SELECT * FROM %s WHERE owner != 'NPC';", g.Id)
+	return getChangedCells(changedCellsText)
 }
 
 
-func (g *Game) GrowCities() {
+func (g *Game) GrowCities() ([]Cell, error) {
 	growCitiesText := fmt.Sprintf("UPDATE %s SET amount = amount + 1 WHERE owner != 'NPC' AND city = true;", g.Id)
 	growCitiesStmt, err  := db.Prepare(growCitiesText)
 	if err != nil {
@@ -165,4 +204,7 @@ func (g *Game) GrowCities() {
 		fmt.Print("Exec failed on growAllStmt call: ", err, "\n")
 		return
 	}
+
+	changedCellsText := fmt.Sprintf("SELECT * FROM %s WHERE owner != 'NPC' AND city = true;", g.Id)
+	return getChangedCells(changedCellsText)
 }
