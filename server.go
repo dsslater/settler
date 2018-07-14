@@ -4,15 +4,17 @@ package main
 import (
 	"cloud.google.com/go/logging"
 	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/websocket"
-	"golang.org/x/net/context"
+	
 	"encoding/json"
 	"errors"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/websocket"
+	"golang.org/x/net/context"
+	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
-	"io/ioutil"
 	"strings"
 	"time"
 )
