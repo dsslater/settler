@@ -69,7 +69,7 @@ func (g *Game) GetCell(row int, col int) (Cell, error) {
 			return cell, err
 		}
 	}
-	fmt.Print("CELL: ", cell, "\n")
+
 	return cell, nil
 }
 
@@ -106,7 +106,7 @@ func (g *Game) GetCells() []Cell {
 		}
 		cells = append(cells, cell)
 	}
-	fmt.Print("CELLS: ", cells, "\n")
+
 	return cells
 }
 
@@ -222,7 +222,6 @@ func (g *Game) GrowCities() ([]Cell, error) {
 
 // saveCell, provided with a cell, saves the information to the db.
 func (g *Game) saveCell(cell Cell) {
-	fmt.Print("Saving Cell\n")
 	saveCellText := fmt.Sprintf("UPDATE %s SET owner = ?, color = ?, amount = ? WHERE row = ? AND col = ?;", g.ID)
 	saveCellStmt, err := db.Prepare(saveCellText)
 	if err != nil {
@@ -240,7 +239,6 @@ func (g *Game) saveCell(cell Cell) {
 
 // addArmies handles army placement on either a cell owned by the player or an opponent.
 func (g *Game) addArmies(player *Player, targetRow int, targetCol int, amount int) {
-	fmt.Print("Adding armies\n")
 	cell, err := g.GetCell(targetRow, targetCol)
 	if err != nil {
 		fmt.Print("Couldn't get target cell. Need to rollback: ", err, "\n")
@@ -272,7 +270,6 @@ func (g *Game) addArmies(player *Player, targetRow int, targetCol int, amount in
    takes all the armies moved and calls addArmies on the target. */
 func (g *Game) move(player *Player, beginRow int, beginCol int, endRow int, endCol int, targetRow int, targetCol int) {
 	// Check that the player has exclusive control
-	fmt.Print("CheckControl\n")
 	checkControlText := fmt.Sprintf("SELECT DISTINCT owner FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.ID)
 	checkControlStmt, err := db.Prepare(checkControlText)
 	if err != nil {
@@ -310,7 +307,6 @@ func (g *Game) move(player *Player, beginRow int, beginCol int, endRow int, endC
 	}
 
 	// Sum armies in the move
-	fmt.Print("Summing Move\n")
 	sumMoveText := fmt.Sprintf("SELECT SUM(amount) FROM %s WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.ID)
 	sumMoveStmt, err := db.Prepare(sumMoveText)
 	if err != nil {
@@ -344,7 +340,6 @@ func (g *Game) move(player *Player, beginRow int, beginCol int, endRow int, endC
 	if armiesToMoveToTarget < 1 {
 		return
 	}
-	fmt.Print("There are suffcient armies to move: ", armiesToMoveToTarget, "\n")
 	// Set all cells in the move to 1
 	setCellsToOneText := fmt.Sprintf("UPDATE %s SET amount = 1 WHERE row >= ? AND row <= ? AND col >= ? AND col <= ?;", g.ID)
 	setCellsToOneStmt, err := db.Prepare(setCellsToOneText)
