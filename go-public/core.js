@@ -106,31 +106,23 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
   });
 
   socket.on('unkownGameCreationError', function(data) {
-    alert('Sorry, we were unable to create ' + $scope.game.id
-          + '. Please try creating a new game.');
+    alert('Sorry, we were unable to create a new game.');
   });
 
   socket.on('wrongPassword', function(data) {
-    alert('Sorry, this is not the password for ' + $scope.game.id)
-  });
-
-  socket.on('gameNameUsedError', function(data) {
-    alert('Sorry, ' + $scope.game.id + ' is already in use, '
-          + 'please try another.');
+    alert('Sorry, this is not the correct password.')
   });
 
   socket.on('unknownGameJoinError', function(data) {
-    alert('Sorry, we were unable to connect to ' + $scope.game.id
-          + '. Please try creating a new game.');
+    alert('Sorry, we were unable to connect you to the linked game.');
   });
 
   socket.on('gameNotFound', function(data) {
-    alert('Sorry, we were unable to find ' + $scope.game.id
-          + '. Please try creating a new game.');
+    alert('Sorry, we were unable to find the game you are looking for.');
   });
 
   socket.on('gameStarted', function(data) {
-    alert('Sorry, ' + $scope.game.id + ' has already started.');
+    alert('Sorry, this game has already started.');
   });
 
   socket.on('update', function(datas){

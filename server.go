@@ -2,15 +2,18 @@ package main
 
 
 import (
+	"cloud.google.com/go/logging"
 	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/websocket"
 	"encoding/json"
 	"errors"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/websocket"
+	"golang.org/x/net/context"
+	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
-	"io/ioutil"
 	"strings"
 	"time"
 )
@@ -24,6 +27,11 @@ const (
 	cityGrowthRatio = 5
 	growthCycleTime = 4.0 * time.Second
 )
+
+
+var logInfo *log.Logger
+
+var logError *log.Logger
 
 
 type createmessage struct {
@@ -87,7 +95,7 @@ var db *sql.DB
 func GameLoop(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Print(err)
+		logError.Println(err)
 		return
 	}
 	var player *Player
@@ -96,7 +104,7 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 	for {
 		var message message
 		if err := conn.ReadJSON(&message); err != nil {
-			fmt.Print("Disconnecting ", player.ID, "\n")
+			logError.Println("Disconnecting ", player.ID, "\n")
 			delete(game.Players, player.ID)
 			if len(game.Players) == 0 {
 				game.Finished = true
@@ -109,13 +117,13 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 		if message.Event == "createGame" {
 			game, player, err = createGame(conn, message.Data)
 			if err != nil {
-				fmt.Print("Catastrophic failure creating game. Disconnecting.")
+				logError.Println("Catastrophic failure creating game. Disconnecting.")
 				return
 			}
 		} else if message.Event == "joinGame" {
 			game, player, err = joinGame(conn, message.Data)
 			if err != nil {
-				fmt.Print("Catastrophic failure joining game. Disconnecting.")
+				logError.Println("Catastrophic failure joining game. Disconnecting.")
 				return
 			}
 		} else if message.Event == "playerReady" {
@@ -131,16 +139,18 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	var game *Game
 	var player *Player
 
-	fmt.Print("Creating game.\n")
+	logInfo.Println("Creating game.\n")
 	bytes, err := json.Marshal(data)
 	if err != nil {
-		fmt.Print("Error with data in createGame:" + err.Error())
+		logError.Println("Error with data in createGame:" + err.Error())
+		emit(conn, "unkownGameCreationError", nil)
 		return game, player, err
 	}
 	var message createmessage
 	err = json.Unmarshal(bytes, &message)
 	if err != nil {
-		fmt.Print("Unable to unmarshal data to createmessage:" + err.Error())
+		logError.Println("Unable to unmarshal data to createmessage:" + err.Error())
+		emit(conn, "unkownGameCreationError", nil)
 		return game, player, err
 	}
 	password := message.Password
@@ -160,6 +170,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	}
 	err = createGameTable(game.ID, height, width)
 	if err != nil {
+		emit(conn, "unkownGameCreationError", nil)
 		return game, player, err
 	}
 	addNPCCities(game)
@@ -185,16 +196,18 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	var game *Game
 	var player *Player
 
-	fmt.Print("Joining game.\n")
+	logInfo.Println("Joining game.")
 	bytes, err := json.Marshal(data)
 	if err != nil {
-		fmt.Print("Error with data in joinGame:" + err.Error())
+		logError.Println("Error with data in joinGame: ", err)
+		emit(conn, "unknownGameJoinError", nil)
 		return game, player, err
 	}
 	var message joinmessage
 	err = json.Unmarshal(bytes, &message)
 	if err != nil {
-		fmt.Print("Unable to unmarshal data to joinmessage:" + err.Error())
+		logError.Println("Unable to unmarshal data to joinmessage: ", err)
+		emit(conn, "unknownGameJoinError", nil)
 		return game, player, err
 	}
 
@@ -205,16 +218,19 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 
 	game, ok := activeGames[gameID]
 	if !ok {
-		fmt.Print("Game not found.\n")
+		logError.Println("Game not found.")
+		emit(conn, "gameNotFound", nil)
 		return game, player, errors.New("Game not found")
 	}
 	if game.Started {
-		fmt.Print("Game has already started.\n")
+		logError.Println("Game has already started.")
+		emit(conn, "gameStarted", nil)
 		return game, player, errors.New("Game has already started")
 	}
 
 	if password != game.Password {
-		fmt.Print("Wrong password!\n")
+		logError.Println("Wrong password!")
+		emit(conn, "wrongPassword", nil)
 		return game, player, errors.New("Wrong password")
 	}
 
@@ -256,17 +272,17 @@ func emitToGame(game *Game, event string, data interface{}) {
 
 
 func emit(conn *websocket.Conn, event string, data interface{}) {
+	// TODO: handle failure especially on websocket writing.
 	wrapper := make(map[string]interface{})
 	wrapper["event"] = event
 	wrapper["data"] = data
 	bytes, err := json.Marshal(wrapper)
 	if err != nil {
-		fmt.Print("Failure the Marshal in emit: ", err)
+		logError.Println("Failure the Marshal in emit: ", err)
 		return
 	}
-	// fmt.Print("Emitting: [", event, "] ", string(bytes), "\n")
 	if err := conn.WriteMessage(websocket.TextMessage, bytes); err != nil {
-		fmt.Print("Failure writing to websocket in emit: ", err)
+		logError.Println("Failure writing to websocket in emit: ", err)
 		return
 	}
 }
@@ -299,11 +315,11 @@ func setupGrowth(game *Game) {
 
 
 func playerReady(conn *websocket.Conn, game *Game, player *Player) {
-	fmt.Print("Player ready.\n")
+	logInfo.Println("Player ready.\n")
 
 	player, ok := game.Players[player.ID]
 	if !ok {
-		fmt.Print("Player not found.\n")
+		logError.Println("Player not found.\n")
 		return
 	}
 
@@ -335,7 +351,7 @@ func startGame(conn *websocket.Conn, game *Game) {
 				cellCol := index[1]
 				cell, err := game.GetCell(cellRow, cellCol)
 				if err != nil {
-					fmt.Print("Failure accessing cell at index: ", index, " with error: ", err, "\n")
+					logError.Println("Failure accessing cell at index: ", index, " with error: ", err, "\n")
 					return
 				}
 				if !cell.City {
@@ -360,7 +376,7 @@ func sendPlayerCities(game *Game, playerCities map[[2]int]bool) {
 		col := index[1]
 		cell, err := game.GetCell(row, col)
 		if err != nil {
-			fmt.Print("Failure accessing player cities cell at index: ", index, " with error: ", err, "\n")
+			logError.Println("Failure accessing player cities cell at index: ", index, " with error: ", err, "\n")
 			return
 		}
 		cells = append(cells, cell)
@@ -370,17 +386,17 @@ func sendPlayerCities(game *Game, playerCities map[[2]int]bool) {
 
 
 func moveArmies(conn *websocket.Conn, game *Game, player *Player, data interface{}) {
-	fmt.Print("Move armies.\n")
+	logInfo.Println("Move armies.")
 	bytes, err := json.Marshal(data)
 	if err != nil {
-		fmt.Print("Error with data in moveArmies:" + err.Error())
+		logError.Println("Error with data in moveArmies: ", err)
 		return
 	}
 
 	var message moveArmiesmessage
 	err = json.Unmarshal(bytes, &message)
 	if err != nil {
-		fmt.Print("Unable to unmarshal data to joinmessage:" + err.Error())
+		logError.Println("Unable to unmarshal data to joinmessage: ", err)
 		return
 	}
 
@@ -449,14 +465,14 @@ func createGameTable(id string, height int, width int) error {
 	creationStmtText := fmt.Sprintf("CREATE TABLE %s (row int, col int, city bool, amount int, owner varchar(255), color varchar(100)) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ROW_FORMAT=DYNAMIC;", id)
 	createStmt, err := db.Prepare(creationStmtText)
 	if err != nil {
-		fmt.Print("Preparing creation statement failed for createGameTable: ", err)
+		logError.Println("Preparing creation statement failed for createGameTable: ", err)
 		return err
 	}
 	defer createStmt.Close()
 
 	 _, err = createStmt.Exec()
 	if err != nil {
-		fmt.Print("createGameTable creation SQL command failed: ", err)
+		logError.Println("createGameTable creation SQL command failed: ", err)
 		return err
 	}
 
@@ -472,28 +488,28 @@ func createGameTable(id string, height int, width int) error {
 	insertionStmtText = insertionStmtText[0:len(insertionStmtText)-1]
 	insertionStmt, err:= db.Prepare(insertionStmtText)
 	if err != nil {
-		fmt.Print("Preparing insertion statement failed for createGameTable: ", err)
+		logError.Println("Preparing insertion statement failed for createGameTable: ", err)
 		return err
 	}
 	defer insertionStmt.Close()
 
 	_, err = insertionStmt.Exec(vals...)
 	if err != nil {
-		fmt.Print("Executing statement failed for insertion in createGameTable: ", err)
+		logError.Println("Executing statement failed for insertion in createGameTable: ", err)
 		return err
 	}
 
 	indexText := fmt.Sprintf("CREATE INDEX row_col ON %s (row, col);", id)
 	indexStmt, err := db.Prepare(indexText)
 	if err != nil {
-		fmt.Print("Failed to build index error: ", err, "\n")
+		logError.Println("Failed to build index error: ", err)
 		return err
 	}
 	defer indexStmt.Close()
 
 	_, err = indexStmt.Exec()
 	if err != nil {
-		fmt.Print("Executing statement failed for indexing in createGameTable: ", err)
+		logError.Println("Executing statement failed for indexing in createGameTable: ", err)
 		return err
 	}
 
@@ -505,19 +521,19 @@ func deleteOldTables() {
 	deleteAllTablesText := "SELECT concat('DROP TABLE IF EXISTS `', table_name, '`;') FROM information_schema.tables WHERE table_schema = 'settler';"
 	deleteAllTablesStmt, err := db.Prepare(deleteAllTablesText)
 	if err != nil {
-		fmt.Print("Preparing deleteAllTablesStmt failed: ", err)
+		logError.Println("Preparing deleteAllTablesStmt failed: ", err)
 		return
 	}
 
 	rows, err := deleteAllTablesStmt.Query()
 	if err != nil {
-		fmt.Print("Query failed on deleteAllTablesStmt call: ", err)
+		logError.Println("Query failed on deleteAllTablesStmt call: ", err)
 		return
 	}
 	defer rows.Close()
 
 	if err = rows.Err(); err != nil {
-		fmt.Print("Rows had an error on deleteAllTablesStmt call: ", err)
+		logError.Println("Rows had an error on deleteAllTablesStmt call: ", err)
 		return
 	}
 
@@ -525,7 +541,7 @@ func deleteOldTables() {
 		var deleteCmd string
 		err := rows.Scan(&deleteCmd)
 		if err != nil {
-			fmt.Print("SQL scan failed for deleteCmd: ", err)
+			logError.Println("SQL scan failed for deleteCmd: ", err)
 			return
 		}
 
@@ -533,7 +549,7 @@ func deleteOldTables() {
 
 		_, err = deleteStmt.Exec()
 		if err != nil {
-			fmt.Print("deleteStmt SQL command failed: ", err)
+			logError.Println("deleteStmt SQL command failed: ", err)
 			return
 		}
 	}
@@ -541,28 +557,49 @@ func deleteOldTables() {
 
 
 func main() {
+	ctx := context.Background()
+
+	// Sets your Google Cloud Platform project ID.
+	projectID := "settler-208704"
+
+	// Creates a client.
+	client, err := logging.NewClient(ctx, projectID)
+
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+
+	defer client.Close()
+
+	// Sets the name of the log to write to.
+	logName := "settler-log"
+
+	logInfo = client.Logger(logName).StandardLogger(logging.Info)
+	logError = client.Logger(logName).StandardLogger(logging.Error)
+
+	logInfo.Println("Logging Initialized")
 	activeGames = make(map[string]*Game)
 	rand.Seed(time.Now().UnixNano())
 	// Connect to SQL DB
 	data, err := ioutil.ReadFile("./database_login")
 	if err != nil {
-		fmt.Print("Err reading database login file")
+		logError.Println("Err reading database login file")
 		panic(err)
 	}
 	databaseLogin := strings.TrimSpace(string(data))
 	db, err = sql.Open("mysql", databaseLogin)
 	if err != nil {
-		fmt.Print("Err connecting to the MYSQL database")
+		logError.Println("Err connecting to the MYSQL database")
 		panic(err.Error())
 	}
 	defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
-		fmt.Print("Err with ping to db")
+		logError.Println("Err with ping to db")
 		panic(err.Error())
 	}
-	fmt.Print("Connected to SQL\n")
+	logInfo.Println("Connected to SQL")
 	// Clean up old tables
 	deleteOldTables()
 	// Set up http server
@@ -570,8 +607,8 @@ func main() {
 	http.HandleFunc("/game", GameLoop)
 	for {
 		if err := http.ListenAndServe(":80", nil); err != nil {
-			fmt.Print("Catastrophic error serving", err)
-			fmt.Print("Restarting server.")
+			logError.Println("Catastrophic error serving", err)
+			logError.Println("Restarting server.")
 		}
 	}
 }
