@@ -143,14 +143,14 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		logError.Println("Error with data in createGame:" + err.Error())
-		emit(conn, 'unkownGameCreationError', nil)
+		emit(conn, "unkownGameCreationError", nil)
 		return game, player, err
 	}
 	var message createmessage
 	err = json.Unmarshal(bytes, &message)
 	if err != nil {
 		logError.Println("Unable to unmarshal data to createmessage:" + err.Error())
-		emit(conn, 'unkownGameCreationError', nil)
+		emit(conn, "unkownGameCreationError", nil)
 		return game, player, err
 	}
 	password := message.Password
@@ -170,7 +170,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	}
 	err = createGameTable(game.ID, height, width)
 	if err != nil {
-		emit(conn, 'unkownGameCreationError', nil)
+		emit(conn, "unkownGameCreationError", nil)
 		return game, player, err
 	}
 	addNPCCities(game)
