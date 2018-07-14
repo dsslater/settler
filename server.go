@@ -2,9 +2,11 @@ package main
 
 
 import (
+	"cloud.google.com/go/logging"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/websocket"
+	"golang.org/x/net/context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,6 +26,11 @@ const (
 	cityGrowthRatio = 5
 	growthCycleTime = 4.0 * time.Second
 )
+
+
+var logInfo *log.Logger
+
+var logError *log.Logger
 
 
 type createmessage struct {
@@ -541,6 +548,27 @@ func deleteOldTables() {
 
 
 func main() {
+	ctx := context.Background()
+
+	// Sets your Google Cloud Platform project ID.
+	projectID := "settler-208704"
+
+	// Creates a client.
+	client, err := logging.NewClient(ctx, projectID)
+
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+
+	defer client.Close()
+
+	// Sets the name of the log to write to.
+	logName := "fpe-log"
+
+	logInfo = client.Logger(logName).StandardLogger(logging.Info)
+	logError = client.Logger(logName).StandardLogger(logging.Error)
+
+	logInfo.Println("Logging Initialized")
 	activeGames = make(map[string]*Game)
 	rand.Seed(time.Now().UnixNano())
 	// Connect to SQL DB
