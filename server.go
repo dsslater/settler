@@ -572,7 +572,7 @@ func main() {
 	defer client.Close()
 
 	// Sets the name of the log to write to.
-	logName := "fpe-log"
+	logName := "settler-log"
 
 	logInfo = client.Logger(logName).StandardLogger(logging.Info)
 	logError = client.Logger(logName).StandardLogger(logging.Error)
