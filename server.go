@@ -95,7 +95,7 @@ var db *sql.DB
 func GameLoop(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Print(err)
+		logError.Println(err)
 		return
 	}
 	var player *Player
@@ -104,7 +104,7 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 	for {
 		var message message
 		if err := conn.ReadJSON(&message); err != nil {
-			fmt.Print("Disconnecting ", player.ID, "\n")
+			logError.Println("Disconnecting ", player.ID, "\n")
 			delete(game.Players, player.ID)
 			if len(game.Players) == 0 {
 				game.Finished = true
@@ -117,13 +117,13 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 		if message.Event == "createGame" {
 			game, player, err = createGame(conn, message.Data)
 			if err != nil {
-				fmt.Print("Catastrophic failure creating game. Disconnecting.")
+				logError.Println("Catastrophic failure creating game. Disconnecting.")
 				return
 			}
 		} else if message.Event == "joinGame" {
 			game, player, err = joinGame(conn, message.Data)
 			if err != nil {
-				fmt.Print("Catastrophic failure joining game. Disconnecting.")
+				logError.Println("Catastrophic failure joining game. Disconnecting.")
 				return
 			}
 		} else if message.Event == "playerReady" {
@@ -281,7 +281,6 @@ func emit(conn *websocket.Conn, event string, data interface{}) {
 		logError.Println("Failure the Marshal in emit: ", err)
 		return
 	}
-	// fmt.Print("Emitting: [", event, "] ", string(bytes), "\n")
 	if err := conn.WriteMessage(websocket.TextMessage, bytes); err != nil {
 		logError.Println("Failure writing to websocket in emit: ", err)
 		return
