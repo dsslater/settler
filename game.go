@@ -374,6 +374,7 @@ func (g *Game) MoveVertical(player *Player, col int, begin int, end int, target 
 	g.move(player, begin, col, end, col, target, col)
 }
 
+
 // GetEffectedCells returns a slice of cells effected by a move.
 func (g *Game) GetEffectedCells(beginRow int, beginCol int, endRow int, endCol int) []Cell {
 	var cells []Cell
@@ -407,4 +408,16 @@ func (g *Game) GetEffectedCells(beginRow int, beginCol int, endRow int, endCol i
 		cells = append(cells, cell)
 	}
 	return cells
+}
+
+
+// RemovePlayer removes a player from the game's list of players.
+func (g *game) RemovePlayer(player *Player) {
+	logError.Println("Disconnecting ", player.ID, "\n")
+	delete(g.Players, player.ID)
+	if len(game.Players) == 0 {
+		game.Finished = true
+	} else if !game.Started{
+		sendPlayerData(game)
+	}
 }
