@@ -417,7 +417,7 @@ func (g *Game) RemovePlayer(player *Player) {
 	delete(g.Players, player.ID)
 	if len(g.Players) == 0 {
 		g.Finished = true
-	} else if !g.Started{
+	} else {
 		sendPlayerData(g)
 	}
 }
