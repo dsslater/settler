@@ -415,9 +415,9 @@ func (g *Game) GetEffectedCells(beginRow int, beginCol int, endRow int, endCol i
 func (g *game) RemovePlayer(player *Player) {
 	logError.Println("Disconnecting ", player.ID, "\n")
 	delete(g.Players, player.ID)
-	if len(game.Players) == 0 {
-		game.Finished = true
-	} else if !game.Started{
-		sendPlayerData(game)
+	if len(g.Players) == 0 {
+		g.Finished = true
+	} else if !g.Started{
+		sendPlayerData(g)
 	}
 }
