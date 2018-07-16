@@ -105,6 +105,13 @@ app.controller('mainController', function($scope, $mdDialog, socket) {
     });
   });
 
+  socket.on('playerUpdate', function(data) {
+    $scope.$apply(function(){
+      $scope.game.readyPlayers = data.readyPlayers ? data.readyPlayers : [];
+      $scope.game.players = data.players;
+    });
+  });
+
   socket.on('unkownGameCreationError', function(data) {
     alert('Sorry, we were unable to create a new game.');
   });

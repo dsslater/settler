@@ -4,13 +4,6 @@ app.controller('waitForReadyController', function($scope, socket) {
     return event.returnValue;
   }
   $scope.link = "http://settler.davidslater.io?gameId=" + $scope.game.id;
-  
-  socket.on('playerUpdate', function(data) {
-    $scope.$apply(function(){
-      $scope.game.readyPlayers = data.readyPlayers ? data.readyPlayers : [];
-      $scope.game.players = data.players;
-    });
-  });
 
   socket.on('startGame', function(data) {
     $scope.$apply(function(){
