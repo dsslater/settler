@@ -8,6 +8,9 @@ app.controller('endDialogController', function($scope, socket, game, player) {
   }
 
   $scope.win = function() {
+    if ($scope.game.players.length <= 1)
+      return true;
+    
     for (var row = 0; row < $scope.game.dimensions[0]; row++) {
       for (var col = 0; col < $scope.game.dimensions[1]; col++) {
         var cell = $scope.game.board[row][col];

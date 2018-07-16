@@ -42,6 +42,23 @@ app.controller('gameController', function($scope, $mdDialog, socket) {
     return !found;
   };
 
+  function endGame() {
+    $scope.game.over = true;
+    socket.disconnect();
+    window.onbeforeunload = null;
+    $mdDialog.show({
+      controller: 'endDialogController',
+      locals: {
+        game: $scope.game,
+        player: $scope.player,
+      },
+      templateUrl: 'endDialog.html',
+      parent: angular.element(document.body),
+      clickOutsideToClose: true,
+      fullscreen: false
+    });
+  }
+
   $scope.$watch('game.board', function(data) {
     // When the board is changed, check if the current player's game is over.
     if (!$scope.game.gameStart) return;
@@ -66,20 +83,19 @@ app.controller('gameController', function($scope, $mdDialog, socket) {
       }
     }
     if (!cityFoundForThisPlayer || !multipleActivePlayers) {
-      $scope.game.over = true;
-      socket.disconnect();
-      window.onbeforeunload = null;
-      $mdDialog.show({
-        controller: 'endDialogController',
-        locals: {
-          game: $scope.game,
-          player: $scope.player,
-        },
-        templateUrl: 'endDialog.html',
-        parent: angular.element(document.body),
-        clickOutsideToClose: true,
-        fullscreen: false
-      });
+      endGame();
     }
   }, true);
+
+  $scope.$watch('game.players', function(data) {
+    // When the board is changed, check if the current player's game is over.
+    if (!$scope.game.gameStart) return;
+    if ($scope.game.over) return;
+    
+    if ($scope.game.players.length <= 1) {
+      endGame();
+    }
+  }, true);
+
+  
 });

@@ -104,12 +104,8 @@ func GameLoop(w http.ResponseWriter, r *http.Request) {
 	for {
 		var message message
 		if err := conn.ReadJSON(&message); err != nil {
-			logError.Println("Disconnecting ", player.ID, "\n")
-			delete(game.Players, player.ID)
-			if len(game.Players) == 0 {
-				game.Finished = true
-			} else if !game.Started{
-				sendPlayerData(conn, game)
+			if game != nil {
+				game.RemovePlayer(player)
 			}
 			return
 		}
@@ -176,7 +172,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	addNPCCities(game)
 	activeGames[game.ID] = game
 	sendGameData(conn, player, game)
-	sendPlayerData(conn, game)
+	sendPlayerData(game)
 	return game, player, nil
 }
 
@@ -236,7 +232,7 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 
 	game.Players[player.ID] = player
 	sendGameData(conn, player, game)
-	sendPlayerData(conn, game)
+	sendPlayerData(game)
 	return game, player, nil
 }
 
@@ -248,30 +244,34 @@ func sendGameData(conn *websocket.Conn, player *Player, game *Game) {
 		Dimensions: [2]int{game.Height, game.Width},
 		Points: game.GetCells(),
 		NumPlayers: 0,
-	};
+	}
 
-	emit(conn, "gameReady", gameInformation);
+	if err := emit(conn, "gameReady", gameInformation); err != nil {
+		game.RemovePlayer(player)
+	}
 }
 
 
-func sendPlayerData(conn *websocket.Conn, game *Game) {
+func sendPlayerData(game *Game) {
 	playerInformation := playerInformation{
 		Players: game.GetPlayers(),
 		ReadyPlayers: game.GetReadyPlayers(),
-	};
+	}
 
-	emitToGame(game, "playerUpdate", playerInformation);
+	emitToGame(game, "playerUpdate", playerInformation)
 }
 
 
 func emitToGame(game *Game, event string, data interface{}) {
 	for _, player := range game.Players {
-		emit(player.Conn, event, data)
+		if err := emit(player.Conn, event, data); err != nil {
+			game.RemovePlayer(player)
+		}
 	}
 }
 
 
-func emit(conn *websocket.Conn, event string, data interface{}) {
+func emit(conn *websocket.Conn, event string, data interface{}) error {
 	// TODO: handle failure especially on websocket writing.
 	wrapper := make(map[string]interface{})
 	wrapper["event"] = event
@@ -279,12 +279,13 @@ func emit(conn *websocket.Conn, event string, data interface{}) {
 	bytes, err := json.Marshal(wrapper)
 	if err != nil {
 		logError.Println("Failure the Marshal in emit: ", err)
-		return
+		return err
 	}
 	if err := conn.WriteMessage(websocket.TextMessage, bytes); err != nil {
 		logError.Println("Failure writing to websocket in emit: ", err)
-		return
+		return err
 	}
+	return nil
 }
 
 
@@ -329,7 +330,7 @@ func playerReady(conn *websocket.Conn, game *Game, player *Player) {
 		game.AssignColors()
 		startGame(conn, game)
 	} else {
-		sendPlayerData(conn, game)
+		sendPlayerData(game)
 	}
 }
 
@@ -364,7 +365,7 @@ func startGame(conn *websocket.Conn, game *Game) {
 	}
 	setupGrowth(game);
 	sendPlayerCities(game, playerCities)
-	sendPlayerData(conn, game)
+	sendPlayerData(game)
     emitToGame(game, "startGame", nil)
 }
 
