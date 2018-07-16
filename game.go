@@ -412,7 +412,7 @@ func (g *Game) GetEffectedCells(beginRow int, beginCol int, endRow int, endCol i
 
 
 // RemovePlayer removes a player from the game's list of players.
-func (g *game) RemovePlayer(player *Player) {
+func (g *Game) RemovePlayer(player *Player) {
 	logError.Println("Disconnecting ", player.ID, "\n")
 	delete(g.Players, player.ID)
 	if len(g.Players) == 0 {

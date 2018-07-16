@@ -146,7 +146,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	err = json.Unmarshal(bytes, &message)
 	if err != nil {
 		logError.Println("Unable to unmarshal data to createmessage:" + err.Error())
-		_ = emit(conn, "unkownGameCreationError", nil)
+		emit(conn, "unkownGameCreationError", nil)
 		return game, player, err
 	}
 	password := message.Password
@@ -166,7 +166,7 @@ func createGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	}
 	err = createGameTable(game.ID, height, width)
 	if err != nil {
-		_ := emit(conn, "unkownGameCreationError", nil)
+		emit(conn, "unkownGameCreationError", nil)
 		return game, player, err
 	}
 	addNPCCities(game)
@@ -196,14 +196,14 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		logError.Println("Error with data in joinGame: ", err)
-		_ := emit(conn, "unknownGameJoinError", nil)
+		emit(conn, "unknownGameJoinError", nil)
 		return game, player, err
 	}
 	var message joinmessage
 	err = json.Unmarshal(bytes, &message)
 	if err != nil {
 		logError.Println("Unable to unmarshal data to joinmessage: ", err)
-		_ := emit(conn, "unknownGameJoinError", nil)
+		emit(conn, "unknownGameJoinError", nil)
 		return game, player, err
 	}
 
@@ -215,18 +215,18 @@ func joinGame(conn *websocket.Conn, data interface{}) (*Game, *Player, error){
 	game, ok := activeGames[gameID]
 	if !ok {
 		logError.Println("Game not found.")
-		_ := emit(conn, "gameNotFound", nil)
+		emit(conn, "gameNotFound", nil)
 		return game, player, errors.New("Game not found")
 	}
 	if game.Started {
 		logError.Println("Game has already started.")
-		_ := emit(conn, "gameStarted", nil)
+		emit(conn, "gameStarted", nil)
 		return game, player, errors.New("Game has already started")
 	}
 
 	if password != game.Password {
 		logError.Println("Wrong password!")
-		_ := emit(conn, "wrongPassword", nil)
+		emit(conn, "wrongPassword", nil)
 		return game, player, errors.New("Wrong password")
 	}
 
