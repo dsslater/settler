@@ -582,7 +582,7 @@ func main() {
 	activeGames = make(map[string]*Game)
 	rand.Seed(time.Now().UnixNano())
 	// Connect to SQL DB
-	data, err := ioutil.ReadFile("./database_login")
+	data, err := ioutil.ReadFile("./go-src/database_login")
 	if err != nil {
 		logError.Println("Err reading database login file")
 		panic(err)
